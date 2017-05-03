@@ -1,0 +1,56 @@
+version: '2'
+services:
+  nsqlookupd:
+    container_name: nsqlookupd
+    image: nsqio/nsq
+    command: /nsqlookupd
+    restart: always
+    ports:
+      - "4160"
+      - "4161"
+  nsqd:
+    container_name: nsqd
+    image: nsqio/nsq
+    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160
+    restart: always
+    ports:
+      - "4150"
+      - "4151"
+  nsqadmin:
+    container_name: nsqadmin
+    image: nsqio/nsq
+    command: /nsqadmin --lookupd-http-address=nsqlookupd:4161
+    restart: always
+    ports:
+      - "4171"
+  sensor:
+    image: sensor
+    restart: always
+    environment:
+    - CONSUL_ADDR=consul
+  worker:
+    image: worker
+    restart: always
+    environment:
+    - CONSUL_ADDR=consul
+  app:
+    image: app
+    restart: always
+    environment:
+    - CONSUL_ADDR=consul
+  consul-hashi:
+    container_name: consul
+    image: consul:latest
+    command: agent
+    environment:
+    - CONSUL_LOCAL_CONFIG={"client_addr":"0.0.0.0","server":true,"bootstrap":true,"datacenter":"dev","node_name":"host1","domain":"sd","ui":true,"services":[{"id":"nsqd","name":"nsqd","address":"nsqd","port":4150}]}
+    ports:
+    - 8600:8600/udp
+    - 8500:8500
+    - 8400:8400
+    - 8300:8300
+    - 8301:8301
+    - 8301:8301/udp
+    - 8302:8302
+    - 8302:8302/udp
+    restart: always

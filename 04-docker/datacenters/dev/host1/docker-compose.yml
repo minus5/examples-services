@@ -41,7 +41,7 @@ services:
   consul-hashi:
     container_name: consul
     image: consul:latest
-    command: agent
+    command: agent -dev
     environment:
     - CONSUL_LOCAL_CONFIG={"client_addr":"0.0.0.0","server":true,"bootstrap":true,"datacenter":"dev","node_name":"host1","domain":"sd","ui":true,"services":[{"id":"nsqd","name":"nsqd","address":"nsqd","port":4150}]}
     ports:

@@ -11,7 +11,7 @@ Services (microservices) kao rjesenje ...?
 
 # Code is a liability
 
-![Code is liability](./code_is _a_liability.png)
+![Code is liability](./code_is_a_liability.png)
 
 # Services definition (~2004)
 

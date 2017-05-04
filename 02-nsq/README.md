@@ -1,6 +1,6 @@
 # Primjer sustava koji komunicira NSQ-om
 
-Servisi iz prethodnog primjera su prera]eni da komuniciraju putem NSQ-a. 
+Servisi iz prethodnog primjera su prerađeni da komuniciraju putem NSQ-a. 
 
 Pokretanje primjera:
 

@@ -6,7 +6,7 @@ Primjeri su organizirani u cjeline. U svakoj sljedećoj cjelini se u postojeću 
 
 Cjeline su:
 
-- [dummy primjer](./01-http) sustava koji se sastoji od 3 servisa koji komuniciraju HTTP-om
+- [dummy primjer](./01-http) sustava koji se sastoji od tri servisa koji komuniciraju HTTP-om
 - [primjer](./02-nsq) uvođenja [nsq](http://nsq.io/)-a u sustav
 - [primjer](./03-consul) uvođenja [consula](https://www.consul.io/) u sustav
 - [primjer](./04-docker) uvođenja [dockera](https://www.docker.com/) u sustav

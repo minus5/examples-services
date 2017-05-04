@@ -40,10 +40,12 @@ func consulResolveService(name string) string {
 			body, err := ioutil.ReadAll(req.Body)
 			if err == nil {
 				json.Unmarshal(body, &crs)
-				cr := crs[0]
-				result := fmt.Sprintf("%s:%d", cr.ServiceAddress, cr.ServicePort)
-				fmt.Println("Consul resloved", name, result)
-				return result
+				if len(crs) > 0 {
+					cr := crs[0]
+					result := fmt.Sprintf("%s:%d", cr.ServiceAddress, cr.ServicePort)
+					fmt.Println("Consul resloved", name, result)
+					return result
+				}
 			}
 		}
 		time.Sleep(time.Second * 1)

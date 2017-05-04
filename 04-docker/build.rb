@@ -6,7 +6,7 @@ class Build < Thor
   def binary(name)
     puts "#{name}: building binary za linux amd64"
     path_cmd("../03-consul/#{name}", "env GOOS=linux GOARCH=amd64 go build")
-    path_cmd(".", "mv ../03-consul/#{name}/#{name} ./#{name}/.")
+    path_cmd(".", "mv ../03-consul/#{name}/#{name} ./images/#{name}/.")
   end
 
   desc "binary_all", "Builda sve go binaries"
@@ -19,7 +19,7 @@ class Build < Thor
   desc "image", "Builda docker image"
   def image(name)
     puts "#{name}: building docker image"
-    path_cmd(name, "docker build -t #{name} .")
+    path_cmd("./images/#{name}", "docker build -t #{name} .")
   end
 
   desc "image_all", "Builda sve docker images"

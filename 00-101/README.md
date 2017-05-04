@@ -62,7 +62,9 @@ Central/common:
 Youtube [Arhitecture](https://www.youtube.com/playlist?list=PLinPBP3n4t5t9R7zF1fR8Ck3G3dC9BOmr) playlist
 
 tldr; 
-Chad Fowler: [Kill "Microservices" before its too late](https://youtu.be/-UKEPd2ipEk?t=49)
-Clemes Vasters: [Messaging and Microservices](https://www.youtube.com/watch?v=rXi5CLjIQ9k)
+* Chad Fowler: [Kill "Microservices" before its too late](https://youtu.be/-UKEPd2ipEk?t=49)
+* Clemes Vasters: [Messaging and Microservices](https://www.youtube.com/watch?v=rXi5CLjIQ9k)
+
+
 
 

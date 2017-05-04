@@ -15,7 +15,11 @@ Services (microservices) kao rjesenje ...?
 
 # Services definition (~2004)
 
+services are
+
 ![definition](./services_definition.png)
+
+services are not
 
 ![service is not](./service_is_not.png)
 
@@ -51,7 +55,7 @@ Services (microservices) kao rjesenje ...?
 
 
 
-Resources:
+# Resources
 
 Youtube [Arhitecture](https://www.youtube.com/playlist?list=PLinPBP3n4t5t9R7zF1fR8Ck3G3dC9BOmr) playlist
 

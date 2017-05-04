@@ -9,10 +9,10 @@ Eric Evans [DDD & Microservices: At Last, Some Boundaries!](https://www.youtube.
 Services (microservices) kao rjesenje ...? 
 
 Doug McIlroy, the inventor of Unix pipes:
-"(i) Make each program do one thing well. To do a new job, build afresh rather than complicate old programs by adding new features."
+> (i) Make each program do one thing well. To do a new job, build afresh rather than complicate old programs by adding new features.
 
 Unix philosophy: 
-"1. Rule of Modularity: Write simple parts connected by clean interfaces."
+> 1. Rule of Modularity: Write simple parts connected by clean interfaces.
 
 
 

@@ -77,7 +77,11 @@ books:
 * Eric Evans: [Domain-Driven Design: Tackling Complexity in the Heart of Software](https://www.amazon.com/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215/ref=asap_bc?ie=UTF8)
 * Jez Humble: [Continuous Delivery](https://www.amazon.com/Continuous-Delivery-Deployment-Automation-Addison-Wesley/dp/0321601912/ref=sr_1_sc_1?s=books&ie=UTF8&qid=1493892201&sr=1-1-spell&keywords=contionus+delivery)
 * [Enterprise Integration Patterns](https://www.amazon.com/Enterprise-Integration-Patterns-Designing-Deploying/dp/0321200683/ref=sr_1_1?s=books&ie=UTF8&qid=1493892281&sr=1-1&keywords=enterprise+integration+patterns)
+* [Patterns, Principles, and Practices of Domain-Driven Design](https://www.amazon.com/Patterns-Principles-Practices-Domain-Driven-Design/dp/1118714709)
+* [Working Effectively with Legacy Code](https://www.amazon.com/Working-Effectively-Legacy-Michael-Feathers/dp/0131177052)
 * ers: [The Art of UNIX Programming](http://www.faqs.org/docs/artu/ch01s06.html#id2877537)
+
+
 
 
 

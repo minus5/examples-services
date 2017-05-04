@@ -34,8 +34,10 @@ services are not
 # Paterns 
 
 (nuzno da bi services arhitektura uspjela):
+
+Central/common:
  
-* communication paterns
+* communication patterns
   * sync
   * async 
 * service discovery

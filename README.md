@@ -22,7 +22,7 @@ To do so I will start with very basic example and gradualy upgrade it until we r
 
 # Example 1: REST
 
-We start with dummy system which consists of 3 services: `Sensor`, `Worker` and `App` ([example 1](https://github.com/minus5/examples-services/tree/master/01-http)).
+We start with dummy system which consists of 3 services: `Sensor`, `Worker` and `App` ([source code](https://github.com/minus5/examples-services/tree/master/01-http)).
 
 <img src="./images/rest.png" height=300/>
 
@@ -114,7 +114,7 @@ However, this layout is in many aspects a step backwards:
 
 # Example 2: Messaging (NSQ)
 
-In the [second example](https://github.com/minus5/examples-services/tree/master/02-nsq) we replace HTTP communication with **asynchronous messaging**. Every microservice attaches itself to the message queueing service and uses it as its only interface to other system components. In our system we are using [NSQ](http://nsq.io) distributed messaging system. 
+In the second example ([source code](https://github.com/minus5/examples-services/tree/master/02-nsq)) we replace HTTP communication with **asynchronous messaging**. Every microservice attaches itself to the message queueing service and uses it as its only interface to other system components. In our system we are using [NSQ](http://nsq.io) distributed messaging system. 
 
 <img src="./images/nsq.png" height=220/>
 
@@ -165,7 +165,7 @@ Messaging has impact on many other aspects of the system:
 
 # Example 3: Service discovery (Consul)
 
-Service discovery is the automatic detection of devices and services on a computer network (description from [wikipedia](https://en.wikipedia.org/wiki/Service_discovery)). In our system we are using [Consul](https://www.consul.io/) for service discovery.
+Service discovery  is the automatic detection of devices and services on a computer network (description from [wikipedia](https://en.wikipedia.org/wiki/Service_discovery)). In our system we are using [Consul](https://www.consul.io/) for service discovery ([example 3](https://github.com/minus5/examples-services/tree/master/03-consul)).
 
 Usually there are some components in the system that are not able to communicate using messaging (databases, key-value storages, proxies, external web services...). Service discovery helps us **locate those services by their name**.
 
@@ -225,7 +225,7 @@ We have been using `consul-template` with various applications, both third party
 
 Adding new modules to the monolith application rarely has any impacts on the development environment or on the production infrastucture. We want be able to **instantiate new services** just as easily. That's what Docker is here for.
 
-In [example 4](https://github.com/minus5/examples-services/tree/master/04-docker) we setup our system infrastructure using [Docker](https://www.docker.com/). Each service gets its own docker container with its own OS and environment. Services are deployed to production by instantiating containers on docker hosts. 
+In [example 4](https://github.com/minus5/examples-services/tree/master/04-docker) we setup our system infrastructure using [Docker](https://www.docker.com/). Each service gets its own Docker container with its own isolated OS and environment. Services are deployed to production by instantiating containers on docker hosts. 
 
 Here are some basic terms from Docker ecosystem:
 

@@ -14,10 +14,10 @@ The intention of this post is to show some technical aspects of the system as it
 
 To do so I will start with very basic example and gradualy upgrade it until we reach the final setup that is very much alike the one we use in production. Feel free to start the examples localy on your machine and to take a look at the source code:
 
-1. [services communicating using rest](https://github.com/minus5/examples-services/tree/master/01-http),
-- [introducing messaging](https://github.com/minus5/examples-services/tree/master/02-nsq) (NSQ),
-- [introducing service discovery](https://github.com/minus5/examples-services/tree/master/03-consul) (Consul) and
-- [introducing containerization](https://github.com/minus5/examples-services/tree/master/04-docker) (Docker)
+3. [services communicating using rest](https://github.com/minus5/examples-services/tree/master/01-http),
+3. [introducing messaging](https://github.com/minus5/examples-services/tree/master/02-nsq) (NSQ),
+3. [introducing service discovery](https://github.com/minus5/examples-services/tree/master/03-consul) (Consul) and
+3. [introducing containerization](https://github.com/minus5/examples-services/tree/master/04-docker) (Docker)
 
 
 # Example 1: REST

@@ -196,8 +196,7 @@ Whenever status of statsd service changes on Consul it will trigger rendering of
 
 We have been using consul-template with various applications, both third party (haproxy, nginx, nsq, keepalived) and our custom (Rails, Node, ...). For Golang applications we use our [custom library](https://github.com/minus5/svckit/tree/master/dcy) that maintains constant connection with Consul without need for restarting the service.
 
-
-#Containerization (Docker)
+# Containerization (Docker)
 
 Adding new modules to the monolith application rarely impacts the development environment or production infrastucture. We want be able to instantiate new services just as easily. That's what Docker is here for.
 

@@ -1,4 +1,26 @@
-# REST
+# Microservices in production: a case study
+
+Microservices - also known as the microservice architecture - is an architectural style that structures an application as a collection of loosely coupled services, which implement business capabilities. The microservice architecture enables the continuous delivery/deployment of large, complex applications. It also enables an organisation to evolve its technology stack (description from [microservices.io](http://microservices.io/)).
+
+This description doesn't give much detail on HOW to do it. Even more so, the people who have done it have all done it **in their specific way** using different tools and different environments. There are no frameworks for doing microservices. There are plenty of tools to help you along the way and yet none of them are required.  There are patterns for solving some known problems. There are lists of good/bad practices and tons of advice. So you have to choose carefully to suit your own needs. With all of this it is highly likely for one setup to end up unique in many of its aspects.
+
+# The case studied
+
+In a similar way, the setup we present here is just a single solution. It has been working with significant load in production for some time now. And that is the message this post will try to deliver: to show some details of a **single solution that works in production**.
+
+[SuperSport](https://www.supersport.hr/) is the largest betting company in Croatia (20TB monthly data transfer, 9M monthly business transactions). It started 12 years ago with several bet-shops. It was the first company in Croatia to introduce betting machines in public places (10 years ago) and also the first one to introduce online betting on the first day it became legally possible (7 years ago). Today SuperSport holds the dominant position in the betting industry in Croatia. One of the crucial reasons for such success is the constant focus on the development and improvement of technology that runs the system. 
+
+The intention of this post is to show some technical aspects of the system as it stands today. To be more specific, I will describe how we adopted the system to the microservice architecture. 
+
+To do so I will start with the simple example and gradualy upgrade it until we reach the final setup that is very much alike the one we use in production. Feel free to start the examples localy on your machine and to take a look at the source code:
+
+- [services communicating using rest](https://github.com/minus5/examples-services/tree/master/01-http),
+- [introducing messaging](https://github.com/minus5/examples-services/tree/master/02-nsq) (NSQ),
+- [introducing service discovery](https://github.com/minus5/examples-services/tree/master/03-consul) (Consul) and
+- [introducing containerization](https://github.com/minus5/examples-services/tree/master/04-docker) (Docker)
+
+
+# Example 1: REST
 
 We start with dummy system which consists of 3 services: *sensor*, *worker* and *app* ([example 1](https://github.com/minus5/examples-services/tree/master/01-http)).
 
@@ -48,7 +70,7 @@ worker: ./worker/worker 2>&1
 app: ./app/app 2>&1
 ```
 
-Now we are able to build and start everything with two commands:
+Now we are able to build and start (and stop) everything with two commands:
 
 ```
 ./build.rb binary_all
@@ -68,14 +90,14 @@ Very important aspect of the orchestrator is that it keeps the overal **process 
 
 ## REST: second attempt
 
-In the example orchestrator initiates the cycle every second with hope that there is some new data available on sensor. If the data on sensor is unevenly distrubuted throuh time (it almost always it) it could bring us ten events in one second and than a period of silence several minutes long. It would be much better to push the data from sensor to app the second it becomes available.
+The *app* initiates the cycle every second with hope that there is some new data available on *sensor*. If the data on *sensor* is unevenly distrubuted throuh time (it almost always is) it could bring us ten events in one second and than a period of silence several minutes long. It would be much better to push the data from *sensor* to *app* the second it becomes available.
 
 For that purpose we might try to rearrange the layout to allow *sensor* to initiate the the process. In that case the workflow might look like this:
 
-- data becomes available on sensor
-- sensor sends the data to worker
-- worker crunches the data and sends the result to app
-- app logs the result to log
+- data becomes available on *sensor*
+- *sensor* sends the data to *worker*
+- *worker* crunches the data and sends the result to *app*
+- *app* logs the result to log
 
 <img src="./images/rest2.png" height=120/>
 
@@ -86,11 +108,11 @@ This layout has some significant improvents:
 
 However, this layout is in many aspects a step backwards:
 
-- sensor has now become aware that there are other services in the system (introduced coupling)
-- sensor has become responsible to deliver the data to the worker
+- *sensor* has now become aware that there are other services in the system (introduced **coupling**)
+- *sensor* has become responsible to deliver the data to the *worker*
 - the **overal workflow** of the system **is scattered around** number of services
 
-# Messaging (NSQ)
+# Example 2: Messaging (NSQ)
 
 In the [second example](https://github.com/minus5/examples-services/tree/master/02-nsq) we replace HTTP communication with **asynchronous messaging**. Every microservice attaches itself to the message queueing service and uses it as its only interface to other system components. In our system we are using [NSQ](http://nsq.io) distributed messaging system. 
 
@@ -109,6 +131,8 @@ Routing meshanism we just described is actualy as a classic **pub/sub** mechanis
 The other common pattern is to distribute messages evenly between several service instances (**load balancing**). For example, if we introduce another instance of worker service all messages will be evenly distributed between all available workers (image from [NSQ docs](http://nsq.io/overview/design.html)). 
 
 <img src="./images/nsq.gif" height=320/>
+
+It is interesting to notice that NSQ routing is not statically configured. It is up to services to decide which topic and chanels to open. 
 
 ## Routing antipatterns 
 
@@ -196,7 +220,7 @@ Whenever status of statsd service changes on Consul it will trigger rendering of
 
 We have been using consul-template with various applications, both third party (haproxy, nginx, nsq, keepalived) and our custom (Rails, Node, ...). For Golang applications we use our [custom library](https://github.com/minus5/svckit/tree/master/dcy) that maintains constant connection with Consul without need for restarting the service.
 
-# Containerization (Docker)
+# Example 4: Containerization (Docker)
 
 Adding new modules to the monolith application rarely impacts the development environment or production infrastucture. We want be able to instantiate new services just as easily. That's what Docker is here for.
 
@@ -295,4 +319,6 @@ In our *dev* datacenter we have several containers that manage the CI process.
 **Builder** container reacts on every git commit made, builds a new image and pushes it to private Docker repository. We have defined several builders for different languages (Golang, JS, Rails).
 
 **Deployer** awaits for remotely dispatched deploy commands and executes them on remote Docker hosts. It also commits every change to the infrastructure repository (every deploy is a change int the infrastructure). Deployer performs the deployment by running docker-machine commands on remote hosts.
+
+# Summary
 

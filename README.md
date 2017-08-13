@@ -358,7 +358,7 @@ In our *dev* datacenter we have several containers that manage the CI process.
 
 **Deployer** listens for remotely dispatched deploy commands and executes them on remote Docker hosts (using *docker-machine* commands). It also commits every change to the infrastructure repository (every deploy is a change in the infrastructure). 
 
-#Summary
+# Summary
 
 ### Patterns 
  

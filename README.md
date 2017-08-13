@@ -4,9 +4,9 @@
 
 This description doesn't give much detail on HOW to do it. Even more so, the people who have done it have all done it **in their own specific way** using different tools and different environments. There are no frameworks for doing microservices. There are plenty of tools to help you along the way and yet none of them are required.  There are patterns for solving some known problems. There are lists of good/bad practices and tons of advice. So you have to choose carefully to suit your own needs. With all of this it is highly likely for one setup to end up unique in many of its aspects.
 
-# The case studied
-
 In a similar way, the setup we present here is just a single solution. It has been working with significant load in production for some time now. And that is the message this post will try to deliver: to show some details of a **single solution that works in production**.
+
+### The case studied
 
 [SuperSport](https://www.supersport.hr/) is the largest betting company in Croatia (20TB monthly data transfer, 9M monthly business transactions). It started 12 years ago with several bet-shops. It was the first company in Croatia to introduce betting machines in public places (10 years ago) and also the first one to introduce online betting on the first day it became legally possible (7 years ago). Today SuperSport holds the dominant position in the betting industry in Croatia. 
 
@@ -16,9 +16,10 @@ The intention of this post is to show some technical aspects of the system as it
 
 [Rocky Mountain Ruby 2016 - Kill "Microservices" before its too late by Chad Fowler](https://www.youtube.com/watch?v=-UKEPd2ipEk&feature=youtu.be&t=49)
 
-On coupling:
+> I learned that the real problem that plagues us all is Coupling. We want to be able to change software. We want to be able to bring things forward, and make them better and better and respond to changing business requirements. We really want to reduce Coupling in software.
 
 <img src="./images/coupling.png" height=300/>
+
 
 Small vs large projects success:
 
@@ -27,11 +28,13 @@ Small vs large projects success:
 
 [GOTO 2016 • Messaging and Microservices • Clemens Vasters](https://www.youtube.com/watch?v=rXi5CLjIQ9k)
 
-Services are:
+>  Defining property of services is that they are autonomous. A service owns all the state that it immedialy depends on an manages. All the data belongs to that service. And *only* to that service. A service owns it communication contract. ... If you share data with other services thatn you don't have a service, you have a *tier*. 
+
+A slide 12 year old:
 
 <img src="./images/services_definition.png" height=300/>
 
-Services are not:
+> Service does not imply any of that stuff. Service is something that talks about organization, how you scope stuff. And takls about ownership. That's arhchitecture, this is implementation.
 
 <img src="./images/service_is_not.png" height=300/>
 
@@ -64,7 +67,7 @@ We start with system that has 3 services: `Sensor`, `Worker` and `App` ([source 
 
 `App` orchestrates the whole process. It asks `Sensor` for some data, sends the data to the `Worker`, receives the result and writes it to log. 
 
-## Development environment
+### Development environment
 
 We should be able to build and start the whole system as easy as with single monolith application. In system with multiple services you should have **automated building and running**; without it development process tends to become slow and painful.
 
@@ -109,7 +112,7 @@ Now we are able to build and start (and stop) everything with two commands:
 goreman start
 ```
 
-## Orchestration
+### Orchestration
 
 In given example `App` has the responsibility of process **orchestration** by leading it through series of actions:
 
@@ -120,7 +123,7 @@ In given example `App` has the responsibility of process **orchestration** by le
 
 Very important aspect of the orchestrator is that it concentrates the overal **process workflow** on **single place**: in its source code. That source code resembles pseudo code with its actions delegated further to other services.
 
-## REST: second attempt
+### REST: second attempt
 
 `App` initiates the cycle every second with hope that there is some new data available on `Sensor`. If the data is unevenly distrubuted through time (it almost always is) it could emit ten events in one second and than have a period of silence several minutes long. It would be much better to push the data from `Sensor` to `App` the second it becomes available.
 
@@ -166,14 +169,14 @@ The other common pattern is to distribute messages evenly between several servic
 
 It is important to notice that NSQ routing is not statically configured. It is up to services to decide which topics and chanels to open. 
 
-## Routing antipatterns 
+### Routing antipatterns 
 
 Other message queuing systems support plenty of other routing patterns. However, one should be aware that complex routing algoritms have been recognized as an **antipattern** in microservice architecture. Messaging component should be kept as *dumb* as possible; *smart* parts of tha application shoud be moved to the endpoints ([pictures by Martin Fowler](https://www.youtube.com/watch?v=wgdBVIX9ifA)).
 
 <img src="./images/nsq-smarts1.png" height=270/>
 <img src="./images/nsq-smarts2.png" height=270/>
 
-## Distributed messaging
+### Distributed messaging
 
 Very important propery of NSQ is that it is **distributed**. This prevents it from introducing single point of failure. Basic components of NSQ system are:
 
@@ -185,7 +188,7 @@ One can **simoultanously** use mutliple instances of **any** node type.
 
 When multiple *nsqd* instances are available in the system they should all register at *nsqlookupd*. Publishers can publish messages to any *nsqd* node and to any topic. Consumer sends the topic it is interested in to the *nsqlookupd* and receives a list of *nsqd* nodes that have messages on that topic. After that it connects directly to those *nsqd* nodes.
 
-## Impact of messaging
+### Impact of messaging
 
 Messaging has impact on many other aspects of the system:
 
@@ -227,8 +230,7 @@ Some other neat features of Consul are:
 - leader election
 - multi datacenters
 
-Consul-template
----
+### Consul-template
 
 [Consul-template](https://github.com/hashicorp/consul-template) is a small command-line tool that facilitates configuration of services with current information from Consul. 
 
@@ -269,7 +271,7 @@ Here are some basic terms from Docker ecosystem:
 - [registry](https://hub.docker.com/_/registry/) - a repository for storing Docker images
 - [Docker Hub](https://hub.docker.com/) - public Docker registry
 
-## Dockerfile
+### Dockerfile
 
 *Dockerfile* is a receipt for building single Docker image. For each service (service, worker, app) we define [separate receipt](https://github.com/minus5/examples-services/tree/master/04-docker/images). Here is an example of receipt for our sensor service:
 
@@ -280,7 +282,7 @@ WORKDIR bin                    # position myself into directory
 ENTRYPOINT ["sensor"]          # when starting container start my binary
 ```
 
-## Docker image
+### Docker image
 
 Docker image is created from *Dockerfile* receipt.
 
@@ -297,7 +299,7 @@ sensor              latest              8d1f3a5ccb5c        5 seconds ago       
 gliderlabs/alpine   3.4                 bce0a5935f2d        13 days ago         4.81MB
 ```
 
-## Docker container
+### Docker container
 
 Containers are created by mounting images on Docker host:
 
@@ -310,7 +312,7 @@ cad9a64773b3        sensor              "sensor"            47 seconds ago      
 
 Containers are components that actually run our services. We control (start/stop) Docker containers using Docker CLI.
 
-## Docker Compose
+### Docker Compose
 
 [Docker-compose](https://docs.docker.com/compose/) is a tool that enables you to define a set of containers that should be simoultanously started on a single host. Also, you can define the environment for every container (env variables, open ports, mounted volumes, ...).
 
@@ -332,7 +334,7 @@ Now we can start **the whole system** on our local Docker host with **a single c
 docker-compose up
 ```
 
-## Docker Machine
+### Docker Machine
 
 By using [docker-machine](https://docs.docker.com/machine/) we can execute docker CLI commands on remote hosts.
 
@@ -356,7 +358,9 @@ In our *dev* datacenter we have several containers that manage the CI process.
 
 **Deployer** listens for remotely dispatched deploy commands and executes them on remote Docker hosts (using *docker-machine* commands). It also commits every change to the infrastructure repository (every deploy is a change in the infrastructure). 
 
-# Patterns 
+#Summary
+
+### Patterns 
  
 * communication patterns: sync vs async
 * service discovery
@@ -368,7 +372,7 @@ In our *dev* datacenter we have several containers that manage the CI process.
 * infrastructure as a source
 
 
-# Antipatterns 
+### Antipatterns 
 
 Micorservices can go wrong:
 

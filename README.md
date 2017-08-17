@@ -86,7 +86,7 @@ Besides issues in development process, coupling may introduce another side-effec
 
 ### Small vs large projects
 
-[Chad Fowler]() on success of small vs large projects: [Rocky Mountain Ruby 2016 - Kill "Microservices" before its too late by Chad Fowler](https://youtu.be/-UKEPd2ipEk?t=29m56s)
+[Chad Fowler](https://youtu.be/-UKEPd2ipEk?t=29m56s) on success of small vs large projects: 
 
 > "Challenged" means significantly overtime or overbudget (to me it sounds like failure). Small projects (most of them) succeed.
 

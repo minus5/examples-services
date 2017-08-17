@@ -69,7 +69,7 @@ Coupling is introduced on many differeny levels:
 - remote APIs (e.g. HTTP requests)
 - module dependencies
 
-When changing one component requires modifications on another component that change becomes a bit harder to achieve. With each introduced dependency the overal system becomes more and more coupled which makes it harder and harder to make changes until it becomes impossible to make any change in the system at all. 
+When changing one component requires modifications on another component that change becomes a bit harder to achieve. With each introduced dependency the overal system becomes more and more coupled which makes changing things harder and harder until it becomes impossible to make any change at all. 
 
 [Chad Fowler](https://youtu.be/-UKEPd2ipEk?t=3m21s):
 

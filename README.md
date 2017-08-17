@@ -77,7 +77,7 @@ When changing one component requires modifications on another component that cha
 
 ### Latency
 
-Besides issues in development process, coupling may introduce another side-effect which emerges in producion enviromnets: **latency**. Namely, when executing database queries that execute multiple actions on multiple rows/tables within single transaction locking machanisms may significaly slow down the overal performance. Microservices usually trade database consistency for **eventual consistency** to improve latency.
+Besides issues in development process, coupling may introduce another side-effect which emerges in producion enviromnets: **latency**. Namely, executing database queries that execute multiple actions on multiple rows/tables within single transaction locking machanisms may significaly slow down the overal performance. Microservices usually trade database consistency for **eventual consistency** to improve latency.
 
 [Caitie McCaffrey](https://youtu.be/0UTOLRTwOX0?t=46s) on Distributed Sagas (A Protocol for Coordinating Microservices):
 

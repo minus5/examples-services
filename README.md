@@ -1,49 +1,97 @@
 # Microservices in production: a case study
 
-> Microservices - also known as the microservice architecture - is an architectural style that structures an application as a collection of loosely coupled services, which implement business capabilities. The microservice architecture enables the continuous delivery/deployment of large, complex applications. It also enables an organisation to evolve its technology stack (description from [microservices.io](http://microservices.io/)).
+Descripion of microservices from [microservices.io](microservices.io):
 
-This description doesn't give much detail on HOW to do it. Even more so, the people who have done it have all done it **in their own specific way** using different tools and different environments. There are no frameworks for doing microservices. There are plenty of tools to help you along the way and yet none of them are required.  There are patterns for solving some known problems. There are lists of good/bad practices and tons of advice. So you have to choose carefully to suit your own needs. With all of this it is highly likely for one setup to end up unique in many of its aspects.
+> Microservices - also known as the microservice architecture - is an architectural style that structures an application as a collection of loosely coupled services, which implement business capabilities. The microservice architecture enables the continuous delivery/deployment of large, complex applications. It also enables an organization to evolve its technology stack.
 
-In a similar way, the setup we present here is just a single solution. It has been working with significant load in production for some time now. And that is the message this post will try to deliver: to show some details of a **single solution that works in production**.
+Description by [Clemens Vasters](https://www.youtube.com/watch?v=rXi5CLjIQ9kon):
 
-### The case studied
+> Defining property of services is that they're ***Autonomous***
+
+> - A service owns all of the state it immediately depends on and manages
+- A service ows its communication contract
+- A service can be changed, redeployed, and/or completely replaced
+- A service has a well-known set of communication paths
+
+> Services shall have no shared state with others:
+
+> - Don't depend on or assume any common data store
+- Don't depend on any shared in-memory state
+
+> No sideline communications between services:
+
+> - No opaque side-effects
+- All communication is explicit
+
+> Autonomy is about agility and cross-org collaboration.
+
+> Services does **NOT** imply: Cloud, JSON, HTTP, Docker, SQL, NoSQL, AMQP, Scale, Reliability, Stateless, ...
+
+
+There are no specific guidelines on HOW to do it. Even more so, the people who have done it have all done it **in their own specific way** using different tools and different environments. There are no frameworks for doing microservices. There are plenty of tools to help you along the way and yet none of them are required.  There are patterns for solving some known problems. There are lists of good/bad practices and tons of advice. So one has to choose carefully to suit his own needs. With all of this it is highly likely for **each setup to end up unique** in many of its aspects.
+
+### A case study
+
+In a similar way, the setup we present here is **a single solution** that has been working with significant load in production for some time now. 
 
 [SuperSport](https://www.supersport.hr/) is the largest betting company in Croatia (20TB monthly data transfer, 9M monthly business transactions). It started 12 years ago with several bet-shops. It was the first company in Croatia to introduce betting machines in public places (10 years ago) and also the first one to introduce online betting on the first day it became legally possible (7 years ago). Today SuperSport holds the dominant position in the betting industry in Croatia. 
 
-The intention of this post is to show some technical aspects of the system as it stands today. To be more specific, I will describe how we adopted the system to the microservice architecture. 
+The intention of this post is to show some technical aspects of the system as it stands today. 
 
 # Why microservices?
 
-[Rocky Mountain Ruby 2016 - Kill "Microservices" before its too late by Chad Fowler](https://www.youtube.com/watch?v=-UKEPd2ipEk&feature=youtu.be&t=49)
+Top resons for having microservices:
+
+- coupling
+- latency
+- small vs large project success
+- move and release independently
+- use "the best" tool for the job
+
+... and many more.
+
+Why not:
+
+- now you have distributed system
+- everything is RPC
+- what if it breaks
+- cost of having many languages (share code, move between teams)
+
+[Matt Ranney](https://www.youtube.com/watch?v=kb-m2fasdDY): What I Wish I Had Known Before Scaling Uber to 1000 Services
+
+
+### Coupling
+
+Coupling is introduced on many differeny levels:
+
+- sharing storages (e.g. databases)
+- database table references (e.g. foreign keys)
+- remote APIs (e.g. HTTP requests)
+- module dependencies
+
+When changing one component requires modifications on another component that change becomes a bit harder to achieve. With each introduced dependency the overal system becomes more and more coupled which makes it harder and harder to make changes until it becomes impossible to make any change in the system at all. 
+
+[Chad Fowler](https://youtu.be/-UKEPd2ipEk?t=3m21s):
 
 > I learned that the real problem that plagues us all is Coupling. We want to be able to change software. We want to be able to bring things forward, and make them better and better and respond to changing business requirements. We really want to reduce Coupling in software.
 
-<img src="./images/coupling.png" height=300/>
+### Latency
+
+Besides issues in development process, coupling may introduce another side-effect which emerges in producion enviromnets: **latency**. Namely, when executing database queries that execute multiple actions on multiple rows/tables within single transaction locking machanisms may significaly slow down the overal performance. Microservices usually trade database consistency for **eventual consistency** to improve latency.
+
+[Caitie McCaffrey](https://youtu.be/0UTOLRTwOX0?t=46s) on Distributed Sagas (A Protocol for Coordinating Microservices):
+
+> Once upon a time we used to construct these monolithic applications and they ran on a scale that cloud safely fit inside a single relational database and that was realy nice from abstracion point of view because all of the complex logic about consistencies, different consistency models and concurrency models were all handled by single database. We would just horizontaly scale our application. Now we are in a time where we can no longer fit in a single database, availailiy of a single database is no longer sufficient for our customers and for our applications. Driving force is we want availability and to be able to scale beyond single machine. Microservice architecture gives you ability to develop and deploy services by independent teams at faster speeds so we can be more agile. With noSQL databases we have to denormalize our data in our different services so you get higher availablility and weaker consistency models.
 
 
-Small vs large projects success:
+### Small vs large projects
+
+[Chad Fowler]() on success of small vs large projects: [Rocky Mountain Ruby 2016 - Kill "Microservices" before its too late by Chad Fowler](https://youtu.be/-UKEPd2ipEk?t=29m56s)
+
+> "Challenged" means significantly overtime or overbudget (to me it sounds like failure). Small projects (most of them) succeed.
 
 <img src="./images/small_vs_large.png" height=300/>
 
-
-[GOTO 2016 • Messaging and Microservices • Clemens Vasters](https://www.youtube.com/watch?v=rXi5CLjIQ9k)
-
->  Defining property of services is that they are autonomous. A service owns all the state that it immedialy depends on an manages. All the data belongs to that service. And *only* to that service. A service owns it communication contract. ... If you share data with other services thatn you don't have a service, you have a *tier*. 
-
-A slide 12 year old:
-
-<img src="./images/services_definition.png" height=300/>
-
-> Service does not imply any of that stuff. Service is something that talks about organization, how you scope stuff. And takls about ownership. That's arhchitecture, this is implementation.
-
-<img src="./images/service_is_not.png" height=300/>
-
-
-Doug McIlroy, the inventor of Unix pipes:
-> (i) Make each program do one thing well. To do a new job, build afresh rather than complicate old programs by adding new features.
-
-Unix philosophy: 
-> 1. Rule of Modularity: Write simple parts connected by clean interfaces.
 
 # Examples
 
@@ -144,10 +192,10 @@ This layout has some significant improvents:
 However, this layout is in many aspects a step backwards:
 
 - `Sensor` has now become aware that there are other services in the system (introduced **coupling**)
-- `Sensor` has become responsible to deliver the data to the *worker*
+- `Sensor` has become responsible to deliver the data to the `Worker`
 - the **overal workflow** of the system **is scattered around** number of services
 
-## Example 2: Messaging (NSQ)
+## Example 2: Messaging
 
 In the second example ([source code](https://github.com/minus5/examples-services/tree/master/02-nsq)) we replace HTTP communication with **asynchronous messaging**. Every microservice attaches itself to the message queueing service and uses it as its only interface to other system components. In our system we are using [NSQ](http://nsq.io) distributed messaging system. 
 
@@ -198,7 +246,7 @@ Messaging has impact on many other aspects of the system:
 - persistence (disaster recovery)
 - routing (event broadcast, load balancing)
 
-## Example 3: Service discovery (Consul)
+## Example 3: Service discovery
 
 > Service discovery is the automatic detection of devices and services on a computer network (description from [wikipedia](https://en.wikipedia.org/wiki/Service_discovery)). 
  
@@ -216,19 +264,16 @@ Consul will periodically poll *health_check* endpoint of each registered service
 
 The only thing that remains to be manually configured within each service is a list of Consul locations; all other infrastructure information is obtained from Consul.
 
+### Service resolution
+
 There are several ways to resolve service location via Consul:
 
 - setting up Consul as DNS (query DNS for *mongo.service.sd*)
 - polling Consul with HTTP requests
 - permanent TCP connection to Consul
+- consul-template
 
 It is very common to write wrappers for HTTP requests that will make service discovery by Consul transparent for the developers.
-
-Some other neat features of Consul are:
-
-- alerting (built upon *health_check*)
-- leader election
-- multi datacenters
 
 ### Consul-template
 
@@ -257,7 +302,13 @@ Every change of `statsd` status on Consul will trigger rendering of *config.yml*
 
 We have been using `consul-template` with various applications, both third party (*haproxy*, *nginx*, *nsq*, *keepalived*) and our custom (*Rails*, *Node*, ...). Within *Go* applications we use our [custom library](https://github.com/minus5/svckit/tree/master/dcy) that maintains constant connection with Consul without need for restarting the service.
 
-## Example 4: Containerization (Docker)
+### Other Consul features
+
+- alerting (built upon *health_check*)
+- leader election
+- multi datacenters
+
+## Example 4: Containerization
 
 Adding new modules to the monolith application rarely has any impact on the development environment or on the production infrastucture. We want be able to **instantiate new services** just as easily. That's what [Docker](https://www.docker.com/) is here for.
 

@@ -9,19 +9,19 @@ Description by [Clemens Vasters](https://www.youtube.com/watch?v=rXi5CLjIQ9kon):
 > Defining property of services is that they're ***Autonomous***
 
 > - A service owns all of the state it immediately depends on and manages
-- A service ows its communication contract
-- A service can be changed, redeployed, and/or completely replaced
-- A service has a well-known set of communication paths
+> - A service ows its communication contract
+> - A service can be changed, redeployed, and/or completely replaced
+> - A service has a well-known set of communication paths
 
 > Services shall have no shared state with others:
 
 > - Don't depend on or assume any common data store
-- Don't depend on any shared in-memory state
+> - Don't depend on any shared in-memory state
 
 > No sideline communications between services:
 
 > - No opaque side-effects
-- All communication is explicit
+> - All communication is explicit
 
 > Autonomy is about agility and cross-org collaboration.
 

@@ -215,14 +215,40 @@ The other common pattern is to distribute messages evenly between several servic
 
 <img src="./images/nsq.gif" height=320/>
 
-It is important to notice that NSQ routing is not statically configured. It is up to services to decide which topics and chanels to open. 
+It is important to notice that NSQ routing is **not statically configured**. It is up to services to decide which topics and chanels to open. This way **message routing is completely managed by serivices**.
+
+### Who is responsible for message delivery?
+
+In the three examples shown we have had three different responsibility patterns. 
+
+1. `Sensor` is passive, it responds only when asked for data
+2. `Sensor` is responsible to deliver data to all interested parties
+3. `Sensor` dispatches the data to third party (NSQ)
+
+<img src="./images/responsibility.png" height=270/>
+
+Drawback with first pattern is that interested parties don't know when the data is available - so they have to poll. 
+
+Drawback with second pattern is that service is responsible to deliver data to all interested parties (introduced coupling). Additional problems may arise when target services are unavailable.
+
+The third pattern solves those two problems. But what happens if some interested party is down for longer time and **misses some messages**? That havily depends on the context and there are many various solutions for that question.
+
+One common solution is to allow consumer to ask the publisher to **replay the data missed**. For such purposes publishers should have additional interface for data replay queries. Consumers should be able:
+
+- to detect that he missed some messages
+- to send query to the publisher to replay data missed
+- to handle messages idempotently
+- to make **full state recovery** when to much data is missed
+
+Other solution (in a slightly different context) is to use [distributed saga pattern](https://youtu.be/0UTOLRTwOX0?t=46s). 
 
 ### Routing antipatterns 
 
-Other message queuing systems support plenty of other routing patterns. However, one should be aware that complex routing algoritms have been recognized as an **antipattern** in microservice architecture. Messaging component should be kept as *dumb* as possible; *smart* parts of tha application shoud be moved to the endpoints ([pictures by Martin Fowler](https://www.youtube.com/watch?v=wgdBVIX9ifA)).
+There are many other routing patterns available. However, one should be aware that complex routing algoritms have been recognized as an **antipattern** in microservice architecture. Messaging component should be kept as *dumb* as possible; *smart* parts of tha application shoud be moved to the endpoints ([pictures by Martin Fowler](https://youtu.be/wgdBVIX9ifA?t=7m55s)).
 
 <img src="./images/nsq-smarts1.png" height=270/>
 <img src="./images/nsq-smarts2.png" height=270/>
+
 
 ### Distributed messaging
 
@@ -235,6 +261,7 @@ Very important propery of NSQ is that it is **distributed**. This prevents it fr
 One can **simoultanously** use mutliple instances of **any** node type. 
 
 When multiple *nsqd* instances are available in the system they should all register at *nsqlookupd*. Publishers can publish messages to any *nsqd* node and to any topic. Consumer sends the topic it is interested in to the *nsqlookupd* and receives a list of *nsqd* nodes that have messages on that topic. After that it connects directly to those *nsqd* nodes.
+
 
 ### Impact of messaging
 
@@ -264,7 +291,7 @@ Consul will periodically poll *health_check* endpoint of each registered service
 
 The only thing that remains to be manually configured within each service is a list of Consul locations; all other infrastructure information is obtained from Consul.
 
-### Service resolution
+### Service resolution patterns
 
 There are several ways to resolve service location via Consul:
 

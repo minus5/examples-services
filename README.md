@@ -117,7 +117,7 @@ We start with system that has 3 services: `Sensor`, `Worker` and `App` ([source 
 
 ### Development environment
 
-We should be able to build and start the whole system as easy as with single monolith application. In system with multiple services you should have **automated building and running**; without it development process tends to become slow and painful.
+We should be able to build and start the whole system as easy as **with single monolith application**. In system with multiple services you should have **automated building and running**; without it development process tends to become slow and painful.
 
 We can start our example by separately building and starting each service. For example, to build and run `Sensor` one sholud do:
 
@@ -213,7 +213,7 @@ Routing meshanism we just described is equivalent to classic **pub/sub** mechani
 
 The other common pattern is to distribute messages evenly between several service instances (**load balancing**). For example, if we introduce another instance of `Worker` all messages will be evenly distributed between two of them (image from [NSQ docs](http://nsq.io/overview/design.html)). 
 
-<img src="./images/nsq.gif" height=320/>
+<img src="./images/nsq.gif" height=320/>x
 
 It is important to notice that NSQ routing is **not statically configured**. It is up to services to decide which topics and chanels to open. This way **message routing is completely managed by serivices**.
 
@@ -221,8 +221,8 @@ It is important to notice that NSQ routing is **not statically configured**. It 
 
 In the three examples shown we have had three different responsibility patterns. 
 
-1. `Sensor` is passive, it responds only when asked for data
-2. `Sensor` is responsible to deliver data to all interested parties
+1. `Sensor` is passive, it responds only when asked for the data
+2. `Sensor` is responsible to deliver the data to all interested parties
 3. `Sensor` dispatches the data to third party (NSQ)
 
 <img src="./images/responsibility.png" height=270/>
@@ -231,7 +231,7 @@ Drawback with first pattern is that interested parties don't know when the data 
 
 Drawback with second pattern is that service is responsible to deliver data to all interested parties (introduced coupling). Additional problems may arise when target services are unavailable.
 
-The third pattern solves those two problems. But what happens if some interested party is down for longer time and **misses some messages**? That havily depends on the context and there are many various solutions for that question.
+The third pattern solves those two problems. But what happens if some interested party is down for longer time and **misses some messages**? That question heavily depends on the context and has various solutions.
 
 One common solution is to allow consumer to ask the publisher to **replay the data missed**. For such purposes publishers should have additional interface for data replay queries. Consumers should be able:
 
@@ -244,7 +244,7 @@ Other solution (in a slightly different context) is to use [distributed saga pat
 
 ### Routing antipatterns 
 
-There are many other routing patterns available. However, one should be aware that complex routing algoritms have been recognized as an **antipattern** in microservice architecture. Messaging component should be kept as *dumb* as possible; *smart* parts of tha application shoud be moved to the endpoints ([pictures by Martin Fowler](https://youtu.be/wgdBVIX9ifA?t=7m55s)).
+We have mentioned two routing patterns: pub/sub and load balancing. There are many others available. However, one should be aware that complex routing algoritms have been recognized as an **antipattern** in microservice architecture. Messaging component should be kept as *dumb* as possible; *smart* parts of the application shoud be moved to the endpoints ([pictures by Martin Fowler](https://youtu.be/wgdBVIX9ifA?t=7m55s)).
 
 <img src="./images/nsq-smarts1.png" height=270/>
 <img src="./images/nsq-smarts2.png" height=270/>
@@ -255,12 +255,12 @@ There are many other routing patterns available. However, one should be aware th
 Very important propery of NSQ is that it is **distributed**. This prevents it from introducing single point of failure. Basic components of NSQ system are:
 
 - *nsqd* - messaging node
-- *nsqlookupd* - discovery node (messaging DNS)
+- *nsqlookupd* - discovery node
 - *nsqadmin* - administration GUI
 
 One can **simoultanously** use mutliple instances of **any** node type. 
 
-When multiple *nsqd* instances are available in the system they should all register at *nsqlookupd*. Publishers can publish messages to any *nsqd* node and to any topic. Consumer sends the topic it is interested in to the *nsqlookupd* and receives a list of *nsqd* nodes that have messages on that topic. After that it connects directly to those *nsqd* nodes.
+When multiple *nsqd* instances are available in the system they should all register at *nsqlookupd* which has a role very similar to **messaging DNS**. Consumers will find all nodes that have some topic by asking *nsqlookupd*.
 
 
 ### Impact of messaging
@@ -275,13 +275,15 @@ Messaging has impact on many other aspects of the system:
 
 ## Example 3: Service discovery
 
-> Service discovery is the automatic detection of devices and services on a computer network (description from [wikipedia](https://en.wikipedia.org/wiki/Service_discovery)). 
+Description from [Wikipedia](https://en.wikipedia.org/wiki/Service_discovery):
+
+> Service discovery is the automatic detection of devices and services on a computer network. 
  
 In our system we are using [Consul](https://www.consul.io/) for service discovery ([example 3](https://github.com/minus5/examples-services/tree/master/03-consul)).
 
 Usually there are some components in the system that are not able to communicate using messaging (databases, key-value storages, proxies, external web services...). Service discovery helps us **locate those services by their name**.
 
-Every service in the system registers itself to Counsul by sending him its:
+Every service in the system **registers itself** to Counsul by sending him its:
 
 - name (e.g. *mongodb*)
 - location (IP, port)
@@ -348,10 +350,12 @@ Here are some basic terms from Docker ecosystem:
 - container - image mounted on a Docker host (does the actual work)
 - [registry](https://hub.docker.com/_/registry/) - a repository for storing Docker images
 - [Docker Hub](https://hub.docker.com/) - public Docker registry
+- [docker-compose](https://docs.docker.com/compose/) - define all containers that run on a single host
+- [docker-machine](https://docs.docker.com/machine/) - run docker commands remotely
 
 ### Dockerfile
 
-*Dockerfile* is a receipt for building single Docker image. For each service (service, worker, app) we define [separate receipt](https://github.com/minus5/examples-services/tree/master/04-docker/images). Here is an example of receipt for our sensor service:
+*Dockerfile* is a receipt for building single Docker image. For each service (`Sensor`, `Worker`, `App`) we define [separate Dockerfile](https://github.com/minus5/examples-services/tree/master/04-docker/images). Here is an example of Dockerfile for `Sensor`:
 
 ```
 FROM gliderlabs/alpine:3.4     # start from existing image (download it from Docker hub)
@@ -368,7 +372,7 @@ Docker image is created from *Dockerfile* receipt.
 $ docker build -t sensor .
 ```
 
-After creating the image we should be able to see it by listing all available images. Here we see that we have locally available alpine and `Sensor` image.
+After creating the image we should be able to see it by listing all available local images. Here we see that we have *alpine* and `Sensor` images available:
 
 ```
 $ docker images
@@ -388,13 +392,13 @@ CONTAINER ID        IMAGE               COMMAND             CREATED             
 cad9a64773b3        sensor              "sensor"            47 seconds ago      Created                                 elated_jackson
 ```
 
-Containers are components that actually run our services. We control (start/stop) Docker containers using Docker CLI.
+Containers are components that actually run our services. We control  Docker containers using [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/) (create, start, stop, restart...).
 
 ### Docker Compose
 
 [Docker-compose](https://docs.docker.com/compose/) is a tool that enables you to define a set of containers that should be simoultanously started on a single host. Also, you can define the environment for every container (env variables, open ports, mounted volumes, ...).
 
-In our example we [define](https://github.com/minus5/examples-services/blob/master/04-docker/datacenters/dev/host1/docker-compose.yml) that we want to have separate containers for:
+In our example we [define](https://github.com/minus5/examples-services/blob/master/04-docker/datacenters/dev/host1/docker-compose.yml) that we want to run 7 containers on the same Docker host:
 
 - `Sensor`
 - `Worker`
@@ -404,7 +408,7 @@ In our example we [define](https://github.com/minus5/examples-services/blob/mast
 - nsqlookupd
 - nsqadmin
 
-It is also worth noting that we already have available Docker images for Consul, nsqd, nsqlookupd and nsqadmin on Docker hub. `Sensor`, `Worker` and `App` are all created from the same [alpine](https://hub.docker.com/_/alpine/) image just by adding different binaries into it.
+It is important to notice that we **already have available** Docker images for Consul, nsqd, nsqlookupd and nsqadmin on Docker hub. Our custom images (`Sensor`, `Worker` and `App`) are created by extending another available image ([alpine](https://hub.docker.com/_/alpine/)) just by adding our application binaries into it.
 
 Now we can start **the whole system** on our local Docker host with **a single command**:
 
@@ -412,15 +416,11 @@ Now we can start **the whole system** on our local Docker host with **a single c
 docker-compose up
 ```
 
-### Docker Machine
-
-By using [docker-machine](https://docs.docker.com/machine/) we can execute docker CLI commands on remote hosts.
-
 ## Infrastructure as a source
 
-Very important aspect of containerization is that it allows us to have the **complete infrastructure** defined **in source** in a single place (i.e. in a single git repository). 
+Very important aspect of containerization is that it allows us to have the **complete infrastructure** defined **in source code** in a single place (i.e. in a single git repository). 
 
-Our infrastructure is hierarchicaly organized in a tree structure:
+[Example 4](https://github.com/minus5/examples-services/tree/master/04-docker) has structure organized **exactly the same** as our system infrastructure. It is hierarchicaly organized in a tree structure:
 
 - list of **datacenters** (*dev*, *supersport*, *aws*)
 - each datacenter has a list of Docker **hosts** 
@@ -430,11 +430,11 @@ Our infrastructure is hierarchicaly organized in a tree structure:
 
 In our *dev* datacenter we have several containers that manage the CI process.
 
-**Builder** container react on every commit to thw source code and build binaries required for creating Docker images. We have separate container for each target technology. For example, *Go* builder builds *Go* binaries, *Rails* buidler precompiles web assets, *JS* builder builds web pages using *Webpack* etc. 
+*Application builder* reacts on every commit in the source code and **builds application binaries**. We have separate container for each target technology. For example, *Go* builder builds *Go* binaries, *Rails* buidler precompiles web assets, *JS* builder builds web pages using *Webpack* etc. 
 
-**Image build** puts together prepared binaries with *Dockerfiles*, builds new Docker images, tags them and pushes them to local Docker registry.
+*Image builder* puts together prepared binaries with *Dockerfiles*, **builds new Docker images**, tags them and pushes them to our local Docker registry.
 
-**Deployer** listens for remotely dispatched deploy commands and executes them on remote Docker hosts (using *docker-machine* commands). It also commits every change to the infrastructure repository (every deploy is a change in the infrastructure). 
+*Deployer* **executes deploy commands** on remote Docker hosts (using *docker-machine*). It also commits every change to the infrastructure repository (every deploy is a change in the system infrastructure!). 
 
 # Summary
 

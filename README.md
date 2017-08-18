@@ -1,15 +1,15 @@
 # Microservices in production: a case study
 
-Descripion of microservices from [microservices.io](microservices.io):
+Description of microservices from [microservices.io](microservices.io):
 
-> Microservices - also known as the microservice architecture - is an architectural style that structures an application as a collection of loosely coupled services, which implement business capabilities. The microservice architecture enables the continuous delivery/deployment of large, complex applications. It also enables an organization to evolve its technology stack.
+> Microservices - also known as the microservice architecture — is an architectural style that structures an application as a collection of loosely coupled services, which implement business capabilities. The microservice architecture enables the continuous delivery/deployment of large, complex applications. It also enables an organisation to evolve its technology stack.
 
 Description by [Clemens Vasters](https://www.youtube.com/watch?v=rXi5CLjIQ9kon):
 
 > Defining property of services is that they're ***Autonomous***
 
 > - A service owns all of the state it immediately depends on and manages
-> - A service ows its communication contract
+> - A service owns its communication contract
 > - A service can be changed, redeployed, and/or completely replaced
 > - A service has a well-known set of communication paths
 
@@ -40,7 +40,7 @@ The intention of this post is to show some technical aspects of the system as it
 
 # Why microservices?
 
-Top resons for having microservices:
+Top reasons for having microservices:
 
 - coupling
 - latency
@@ -62,14 +62,14 @@ Why not:
 
 ### Coupling
 
-Coupling is introduced on many differeny levels:
+Coupling is introduced on many application levels:
 
-- sharing storages (e.g. databases)
+- shared data storages (e.g. databases)
 - database table references (e.g. foreign keys)
 - remote APIs (e.g. HTTP requests)
 - module dependencies
 
-When changing one component requires modifications on another component that change becomes a bit harder to achieve. With each introduced dependency the overal system becomes more and more coupled which makes changing things harder and harder until it becomes impossible to make any change at all. 
+When changing one component requires modifications on another component that change becomes a bit harder to achieve. With each introduced dependency the overall system becomes more and more coupled which makes changing things harder and harder until it becomes impossible to make any change at all. 
 
 [Chad Fowler](https://youtu.be/-UKEPd2ipEk?t=3m21s):
 
@@ -77,30 +77,30 @@ When changing one component requires modifications on another component that cha
 
 ### Latency
 
-Besides issues in development process, coupling may introduce another side-effect which emerges in producion enviromnets: **latency**. Namely, executing database queries that execute multiple actions on multiple rows/tables within single transaction triggers locking machanisms which may cut down the overal performance. Microservices usually trade database consistency for **eventual consistency** to improve latency.
+Besides issues in development process, coupling may bring another side-effect which emerges in production environments: **latency**. Namely, executing database queries that execute multiple actions on multiple rows/tables within single transaction triggers locking mechanisms which may cut down the overall performance. Microservices usually trade database consistency for **eventual consistency** to improve latency.
 
 [Caitie McCaffrey](https://youtu.be/0UTOLRTwOX0?t=46s) on Distributed Sagas (A Protocol for Coordinating Microservices):
 
-> Once upon a time we used to construct these monolithic applications and they ran on a scale that cloud safely fit inside a single relational database and that was realy nice from abstracion point of view because all of the complex logic about consistencies, different consistency models and concurrency models were all handled by single database. We would just horizontaly scale our application. Now we are in a time where we can no longer fit in a single database, availability of a single database is no longer sufficient for our customers and for our applications. Driving force is we want availability and to be able to scale beyond single machine. Microservice architecture gives you ability to develop and deploy services by independent teams at faster speeds so we can be more agile. With noSQL databases we have to denormalize our data in our different services so you get higher availablility and weaker consistency models.
+> Once upon a time we used to construct these monolithic applications and they ran on a scale that cloud safely fit inside a single relational database and that was really nice from abstraction point of view because all of the complex logic about consistencies, different consistency models and concurrency models were all handled by single database. We would just horizontally scale our application. Now we are in a time where we can no longer fit in a single database, availability of a single database is no longer sufficient for our customers and for our applications. Driving force is we want availability and to be able to scale beyond single machine. Microservice architecture gives you ability to develop and deploy services by independent teams at faster speeds so we can be more agile. With noSQL databases we have to denormalise our data in our different services so you get higher availability and weaker consistency models.
 
 
 ### Small vs large projects
 
 [Chad Fowler](https://youtu.be/-UKEPd2ipEk?t=29m56s) on success of small vs large projects: 
 
-> "Challenged" means significantly overtime or overbudget (to me it sounds like failure). Small projects (most of them) succeed.
+> "Challenged" means significantly overtime or over budget (to me it sounds like failure). Small projects (most of them) succeed.
 
 <img src="./images/small_vs_large.png" height=300/>
 
 
 # Examples
 
-We will start with very basic example and gradualy upgrade it until we reach the final setup that is very much alike the one we use in production. Feel free to start the examples localy on your machine and to take a look at the source code:
+We will start with very basic example and gradually upgrade it until we reach the final setup that is very similar to the current SuperSport system. Feel free to start the examples locally on your machine and to take a look at the source code:
 
 1. [services communicating using rest](https://github.com/minus5/examples-services/tree/master/01-http),
 1. [introducing messaging](https://github.com/minus5/examples-services/tree/master/02-nsq) (NSQ),
 1. [introducing service discovery](https://github.com/minus5/examples-services/tree/master/03-consul) (Consul) and
-1. [introducing containerization](https://github.com/minus5/examples-services/tree/master/04-docker) (Docker)
+1. [introducing containerisation](https://github.com/minus5/examples-services/tree/master/04-docker) (Docker)
 
 
 ## Example 1: REST
@@ -111,7 +111,7 @@ We start with system that has 3 services: `Sensor`, `Worker` and `App` ([source 
 
 `Sensor` generates random numbers and exposes them at HTTP interface. 
 
-`Worker` is able to recieve some sensor data ad perform some heavy computation on it. In this showcase it only squares received numbers and returns them as a result. It also exposes this functionality on HTTP interface.
+`Worker` is able to receive some sensor data ad perform some heavy computation on it. In this showcase it only squares received numbers and returns them as a result. It also exposes this functionality on HTTP interface.
 
 `App` orchestrates the whole process. It asks `Sensor` for some data, sends the data to the `Worker`, receives the result and writes it to log. 
 
@@ -119,7 +119,7 @@ We start with system that has 3 services: `Sensor`, `Worker` and `App` ([source 
 
 We should be able to build and start the whole system as easy as **with single monolith application**. In system with multiple services you should have **automated building and running**; without it development process tends to become slow and painful.
 
-We can start our example by separately building and starting each service. For example, to build and run `Sensor` one sholud do:
+We can start our example by separately building and starting each service. For example, to build and run `Sensor` one should do:
 
 ```
 $ cd ./01-http/sensor
@@ -169,13 +169,13 @@ In given example `App` has the responsibility of process **orchestration** by le
 - asking the `Worker` to perform calculations
 - logging the result to log
 
-Very important aspect of the orchestrator is that it concentrates the overal **process workflow** on **single place**: in its source code. That source code resembles pseudo code with its actions delegated further to other services.
+Very important aspect of the orchestrator is that it concentrates the overall **process workflow** on **single place**: in its source code. With implementation details delegated further (to other services) process workflow becomes much easier to grasp.
 
 ### REST: second attempt
 
-`App` initiates the cycle every second with hope that there is some new data available on `Sensor`. If the data is unevenly distrubuted through time (it almost always is) it could emit ten events in one second and than have a period of silence several minutes long. It would be much better to push the data from `Sensor` to `App` the second it becomes available.
+`App` initiates the cycle every second with hope that there is some new data available on `Sensor`. If the data is unevenly distributed through time (it almost always is) it could emit ten events in one second and than have a period of silence several minutes long. It would be much better to push the data from `Sensor` to `App` the second it becomes available.
 
-For that purpose we might try to rearrange the layout to allow `Sensor` to initiate the the process. In that case the workflow might look like this:
+For that purpose we might try to rearrange the layout to allow `Sensor` to initiate the process. In that case the workflow might look like this:
 
 - data becomes available on `Sensor`
 - `Sensor` sends the data to `Worker`
@@ -184,7 +184,7 @@ For that purpose we might try to rearrange the layout to allow `Sensor` to initi
 
 <img src="./images/rest2.png" height=120/>
 
-This layout has some significant improvents: 
+This layout has some significant improvements: 
 
 - it starts to work instantly when the data is available on `Sensor`
 - it works only when there is data available
@@ -193,29 +193,29 @@ However, this layout is in many aspects a step backwards:
 
 - `Sensor` has now become aware that there are other services in the system (introduced **coupling**)
 - `Sensor` has become responsible to deliver the data to the `Worker`
-- the **overal workflow** of the system **is scattered around** number of services
+- the **overall process workflow** of the system **is scattered around** number of services
 
 ## Example 2: Messaging
 
-In the second example ([source code](https://github.com/minus5/examples-services/tree/master/02-nsq)) we replace HTTP communication with **asynchronous messaging**. Every microservice attaches itself to the message queueing service and uses it as its only interface to other system components. In our system we are using [NSQ](http://nsq.io) distributed messaging system. 
+In the [second example](https://github.com/minus5/examples-services/tree/master/02-nsq) we replace HTTP communication with **asynchronous messaging**. Every microservice attaches itself to the message queueing service and uses it as it's only interface to other services. In our system we are using [NSQ](http://nsq.io) distributed messaging system. 
 
 <img src="./images/nsq.png" height=220/>
 
 Services are not in any way aware of other services in the system. For that reason message producers are unable to choose which service should receive messages being send. Instead they use various **routing** algorithms.
 
-Message routing in NSQ is organized around *topics* and *channels*:
+Message routing in NSQ is organised around *topics* and *channels*:
 
 - publisher pushes the message to some named **topic** 
 - each interested consumer opens his own named **channel** on that topic
 - every channel will receive a copy of every message published on topic
 
-Routing meshanism we just described is equivalent to classic **pub/sub** mechanism (`Worker` subscribes to `Sensor` messages).
+Routing mechanism we just described is equivalent to classic **pub/sub** mechanism (`Worker` subscribes to `Sensor` messages).
 
 The other common pattern is to distribute messages evenly between several service instances (**load balancing**). For example, if we introduce another instance of `Worker` all messages will be evenly distributed between two of them (image from [NSQ docs](http://nsq.io/overview/design.html)). 
 
-<img src="./images/nsq.gif" height=320/>x
+<img src="./images/nsq.gif" height=320/>
 
-It is important to notice that NSQ routing is **not statically configured**. It is up to services to decide which topics and chanels to open. This way **message routing is completely managed by serivices**.
+It is important to notice that NSQ routing is **not statically configured**. It is up to services to decide which topics and channels to open. This way **message routing is completely managed by services**.
 
 ### Who is responsible for message delivery?
 
@@ -227,24 +227,24 @@ In the three examples shown we have had three different responsibility patterns.
 
 <img src="./images/responsibility.png" height=270/>
 
-Drawback with first pattern is that interested parties don't know when the data is available - so they have to poll. 
+Drawback with first pattern is that interested parties don't know when the data is available — so they have to poll. 
 
 Drawback with second pattern is that service is responsible to deliver data to all interested parties (introduced coupling). Additional problems may arise when target services are unavailable.
 
 The third pattern solves those two problems. But what happens if some interested party is down for longer time and **misses some messages**? That question heavily depends on the context and has various solutions.
 
-One common solution is to allow consumer to ask the publisher to **replay the data missed**. For such purposes publishers should have additional interface for data replay queries. Consumers should be able:
+One common solution is to allow consumer to ask the publisher to **replay the data missed**. For such purposes publishers should have additional interface for data replay queries. Consumer should be able:
 
 - to detect that he missed some messages
 - to send query to the publisher to replay data missed
 - to handle messages idempotently
-- to make **full state recovery** when to much data is missed
+- to make **full state recovery** when too much data has been missed
 
 Other solution (in a slightly different context) is to use [distributed saga pattern](https://youtu.be/0UTOLRTwOX0?t=46s). 
 
-### Routing antipatterns 
+### Routing anti-patterns 
 
-We have mentioned two routing patterns: pub/sub and load balancing. There are many others available. However, one should be aware that complex routing algoritms have been recognized as an **antipattern** in microservice architecture. Messaging component should be kept as *dumb* as possible; *smart* parts of the application shoud be moved to the endpoints ([pictures by Martin Fowler](https://youtu.be/wgdBVIX9ifA?t=7m55s)).
+We have mentioned two routing patterns: pub/sub and load balancing. There are many others available. However, one should be aware that complex routing algorithms have been recognised as an **anti-pattern** in microservice architecture. Messaging component should be kept as *dumb* as possible; *smart* parts of the application should be moved to the endpoints ([pictures by Martin Fowler](https://youtu.be/wgdBVIX9ifA?t=7m55s)).
 
 <img src="./images/nsq-smarts1.png" height=270/>
 <img src="./images/nsq-smarts2.png" height=270/>
@@ -252,13 +252,13 @@ We have mentioned two routing patterns: pub/sub and load balancing. There are ma
 
 ### Distributed messaging
 
-Very important propery of NSQ is that it is **distributed**. This prevents it from introducing single point of failure. Basic components of NSQ system are:
+Very important property of NSQ is that it is **distributed**. This prevents it from introducing single point of failure. Basic components of NSQ system are:
 
-- *nsqd* - messaging node
-- *nsqlookupd* - discovery node
-- *nsqadmin* - administration GUI
+- *nsqd* — messaging node
+- *nsqlookupd* — discovery node
+- *nsqadmin* — administration GUI
 
-One can **simoultanously** use mutliple instances of **any** node type. 
+One can **simultaneously** use multiple instances of **any** node type. 
 
 When multiple *nsqd* instances are available in the system they should all register at *nsqlookupd* which has a role very similar to **messaging DNS**. Consumers will find all nodes that have some topic by asking *nsqlookupd*.
 
@@ -289,7 +289,7 @@ Every service in the system **registers itself** to Counsul by sending him its:
 - location (IP, port)
 - *health_check* endpoint
 
-Consul will periodically poll *health_check* endpoint of each registered service and inform other services about any changes in the service infrastucture. 
+Consul will periodically poll *health_check* endpoint of each registered service and inform other services about any changes in the service infrastructure. 
 
 The only thing that remains to be manually configured within each service is a list of Consul locations; all other infrastructure information is obtained from Consul.
 
@@ -300,7 +300,7 @@ There are several ways to resolve service location via Consul:
 - setting up Consul as DNS (query DNS for *mongo.service.sd*)
 - polling Consul with HTTP requests
 - permanent TCP connection to Consul
-- consul-template
+- [consul-template](https://github.com/hashicorp/consul-template)
 
 It is very common to write wrappers for HTTP requests that will make service discovery by Consul transparent for the developers.
 
@@ -329,7 +329,7 @@ consul-template -template \
 
 Every change of `statsd` status on Consul will trigger rendering of *config.yml* and graceful restart *Rails* application.
 
-We have been using `consul-template` with various applications, both third party (*haproxy*, *nginx*, *nsq*, *keepalived*) and our custom (*Rails*, *Node*, ...). Within *Go* applications we use our [custom library](https://github.com/minus5/svckit/tree/master/dcy) that maintains constant connection with Consul without need for restarting the service.
+We have been using `consul-template` with various applications, both third party (*haproxy*, *nginx*, *nsq*, *keepalived*) and our custom (*Rails*, *Node*...). Within *Go* applications we use our [custom library](https://github.com/minus5/svckit/tree/master/dcy) that maintains constant connection with Consul without need for restarting the service.
 
 ### Other Consul features
 
@@ -337,21 +337,21 @@ We have been using `consul-template` with various applications, both third party
 - leader election
 - multi datacenters
 
-## Example 4: Containerization
+## Example 4: Containerisation
 
-Adding new modules to the monolith application rarely has any impact on the development environment or on the production infrastucture. We want be able to **instantiate new services** just as easily. That's what [Docker](https://www.docker.com/) is here for.
+Adding new modules to the monolith application rarely has any impact on the development environment or on the production infrastructure. We want be able to **instantiate new services** just as easily. That's what [Docker](https://www.docker.com/) is here for.
 
-In [example 4](https://github.com/minus5/examples-services/tree/master/04-docker) we setup our system infrastructure using Docker. Each service gets its own Docker container with its own isolated OS and environment. Services are deployed to production by instantiating containers on docker hosts. 
+In [example 4](https://github.com/minus5/examples-services/tree/master/04-docker) we setup our system infrastructure using Docker. Each service gets its own Docker container with its own isolated OS and environment. Services are deployed to production by instantiating containers on Docker hosts. 
 
 Here are some basic terms from Docker ecosystem:
 
-- *Dockerfile* - a receipt for building image
-- image - a blueprint for creating containers
-- container - image mounted on a Docker host (does the actual work)
-- [registry](https://hub.docker.com/_/registry/) - a repository for storing Docker images
-- [Docker Hub](https://hub.docker.com/) - public Docker registry
-- [docker-compose](https://docs.docker.com/compose/) - define all containers that run on a single host
-- [docker-machine](https://docs.docker.com/machine/) - run docker commands remotely
+- *Dockerfile* — a receipt for building an image
+- image — a blueprint for creating containers
+- container — image mounted on a Docker host (does the actual work)
+- [registry](https://hub.docker.com/_/registry/) — a repository for storing Docker images
+- [Docker Hub](https://hub.docker.com/) — public Docker registry
+- [docker-compose](https://docs.docker.com/compose/) — define all containers that run on a single host
+- [docker-machine](https://docs.docker.com/machine/) — run docker commands remotely
 
 ### Dockerfile
 
@@ -396,7 +396,7 @@ Containers are components that actually run our services. We control  Docker con
 
 ### Docker Compose
 
-[Docker-compose](https://docs.docker.com/compose/) is a tool that enables you to define a set of containers that should be simoultanously started on a single host. Also, you can define the environment for every container (env variables, open ports, mounted volumes, ...).
+[Docker-compose](https://docs.docker.com/compose/) is a tool that enables you to define a set of containers that should be simultaneously started on a single host. Also, you can define the environment for every container (env variables, open ports, mounted volumes...).
 
 In our example we [define](https://github.com/minus5/examples-services/blob/master/04-docker/datacenters/dev/host1/docker-compose.yml) that we want to run 7 containers on the same Docker host:
 
@@ -418,9 +418,9 @@ docker-compose up
 
 ## Infrastructure as a source
 
-Very important aspect of containerization is that it allows us to have the **complete infrastructure** defined **in source code** in a single place (i.e. in a single git repository). 
+Very important aspect of containerisation is that it allows us to have the **complete infrastructure** defined **in source code** in a single place (i.e., in a single git repository). 
 
-[Example 4](https://github.com/minus5/examples-services/tree/master/04-docker) has structure organized **exactly the same** as our system infrastructure. It is hierarchicaly organized in a tree structure:
+[Example 4](https://github.com/minus5/examples-services/tree/master/04-docker) has structure organised **exactly the same** as our system infrastructure. It is hierarchically organised in a tree structure:
 
 - list of **datacenters** (*dev*, *supersport*, *aws*)
 - each datacenter has a list of Docker **hosts** 
@@ -428,9 +428,9 @@ Very important aspect of containerization is that it allows us to have the **com
 
 ## Continuous integration
 
-In our *dev* datacenter we have several containers that manage the CI process.
+In our *dev* datacenter we have several containers responsible for managing the CI process.
 
-*Application builder* reacts on every commit in the source code and **builds application binaries**. We have separate container for each target technology. For example, *Go* builder builds *Go* binaries, *Rails* buidler precompiles web assets, *JS* builder builds web pages using *Webpack* etc. 
+*Application builder* reacts on every commit in the source code and **builds application binaries**. We have separate container for each target technology: *Go* builder builds *Go* binaries, *Rails* builder precompiles web assets, *JS* builder builds web pages using *Webpack* , etc. 
 
 *Image builder* puts together prepared binaries with *Dockerfiles*, **builds new Docker images**, tags them and pushes them to our local Docker registry.
 
@@ -452,7 +452,7 @@ In our *dev* datacenter we have several containers that manage the CI process.
 
 ### Antipatterns 
 
-Micorservices can go wrong:
+Microservices can go wrong:
 
 * consistency (vs eventual consistency)
 * synchronous communication

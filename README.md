@@ -45,8 +45,9 @@ Top reasons for having microservices:
 - coupling
 - latency
 - small vs large project success
-- move and release independently
 - use "the best" tool for the job
+- move and release independently
+- technical debt
 
 ... and many more.
 
@@ -56,13 +57,14 @@ Why not:
 - everything is RPC
 - what if it breaks
 - cost of having many languages (share code, move between teams)
+- harder cross-cutting changes (deploy, transitional phases)
 
 [Matt Ranney](https://www.youtube.com/watch?v=kb-m2fasdDY): What I Wish I Had Known Before Scaling Uber to 1000 Services
 
 
 ### Coupling
 
-Coupling is introduced on many application levels:
+Coupling is introduced on various levels:
 
 - shared data storages (e.g. databases)
 - database table references (e.g. foreign keys)
@@ -92,10 +94,17 @@ Besides issues in development process, coupling may bring another side-effect wh
 
 <img src="./images/small_vs_large.png" height=300/>
 
+### Quick-fixes and technical debt
+
+Very interesting side-effect of decoupling is that it becomes **a bit harder to introduce quick-fixes** that cross cut along multiple services (it is harder to introduce coupling). The only interface that service has is strictly defined (in his communication API) which makes it harder to violate. For example, one service cannot just reach out to another's service database; that communication must be explicitly defined. 
+
+From a business point of view it is very nice to have ocasional quick-fix and leave the actual full-size fixes for later. Unfortunately, such full-size fixes usually quickly fall out of focus since everything seems to work nicely and there is no evident business reason to do them. This slowly **accumulates technical debt** which can be very harmful (for business!) in the long run.
+
+So there is a cute tradeoff between being able to change things now or later.
 
 # Examples
 
-We will start with very basic example and gradually upgrade it until we reach the final setup that is very similar to the current SuperSport system. Feel free to start the examples locally on your machine and to take a look at the source code:
+We will start with a very basic example and gradually upgrade it until we reach a setup very similar to our current production system. Feel free to start the examples locally on your machine and to take a look at the source code:
 
 1. [services communicating using rest](https://github.com/minus5/examples-services/tree/master/01-http),
 1. [introducing messaging](https://github.com/minus5/examples-services/tree/master/02-nsq) (NSQ),
@@ -420,7 +429,7 @@ docker-compose up
 
 Very important aspect of containerisation is that it allows us to have the **complete infrastructure** defined **in source code** in a single place (i.e., in a single git repository). 
 
-[Example 4](https://github.com/minus5/examples-services/tree/master/04-docker) has structure organised **exactly the same** as our system infrastructure. It is hierarchically organised in a tree structure:
+[Example 4](https://github.com/minus5/examples-services/tree/master/04-docker) gives an overview of **infrastructure we use in production**. It is hierarchically organised in a tree structure:
 
 - list of **datacenters** (*dev*, *supersport*, *aws*)
 - each datacenter has a list of Docker **hosts** 
@@ -460,3 +469,43 @@ Microservices can go wrong:
 * shared database
 
 # Resources
+
+Sites:
+
+ - [microservices.io](microservices.io)
+ - [martinfowler.com](https://martinfowler.com)
+ - [The Hardest Part About Microservices: Your Data](http://blog.christianposta.com/microservices/the-hardest-part-about-microservices-data/)
+
+Tools:
+
+- [NSQ](http://nsq.io)
+- [Consul](https://www.consul.io/)
+- [consul-template](https://github.com/hashicorp/consul-template)
+- [Docker](https://www.docker.com/)
+- [Docker registry](https://hub.docker.com/_/registry/)
+- [Docker Hub](https://hub.docker.com/)
+- [docker-compose](https://docs.docker.com/compose/)
+- [docker-machine](https://docs.docker.com/machine/)
+- [svckit](https://github.com/minus5/svckit/tree/master/dcy)
+
+Talks:
+
+- [GOTO 2016 • Messaging and Microservices • Clemens Vasters](https://www.youtube.com/watch?v=rXi5CLjIQ9kon)
+- [GOTO 2016 • What I Wish I Had Known Before Scaling Uber to 1000 Services • Matt Ranney](https://www.youtube.com/watch?v=kb-m2fasdDY)
+- [GOTO 2014 • Microservices • Martin Fowler](https://youtu.be/wgdBVIX9ifA?t=7m55s)
+- [GOTO 2015 • DDD & Microservices: At Last, Some Boundaries! • Eric Evans](https://www.youtube.com/watch?v=yPvef9R3k-M)
+- [Rocky Mountain Ruby 2016 - Kill "Microservices" before its too late by Chad Fowler](https://youtu.be/-UKEPd2ipEk?t=3m21s)
+- [Distributed Sagas: A Protocol for Coordinating Microservices - Caitie McCaffrey - JOTB17](https://youtu.be/0UTOLRTwOX0)
+- [The hardest part of microservices is your data](https://www.youtube.com/watch?v=MrV0DqTqpFU)
+- [GOTO 2016 • Microservices at Netflix Scale: Principles, Tradeoffs & Lessons Learned • R. Meshenberg](https://www.youtube.com/watch?v=57UK46qfBLY)
+- [Martin Fowler – What Does Tech Excellence Look Like? | TW Live Australia 2016](https://www.youtube.com/watch?v=Avs70dZ3Vlk)
+- [GOTO 2017 • The Many Meanings of Event-Driven Architecture • Martin Fowler](https://www.youtube.com/watch?v=STKCRSUsyP0)
+- [GOTO 2016 • Psychology, Philosophy & Programming • Ted Neward](https://www.youtube.com/watch?v=XShcmCBK93E)
+- [GOTO 2014 • Event Sourcing • Greg Young](https://www.youtube.com/watch?v=8JKjvY4etTY)
+- [Greg Young — A Decade of DDD, CQRS, Event Sourcing](https://www.youtube.com/watch?v=LDW0QWie21s)
+- [Greg Young - CQRS and Event Sourcing - Code on the Beach 2014](https://www.youtube.com/watch?v=JHGkaShoyNs)
+- [Greg Young - The Long Sad History of MicroServices TM](https://www.youtube.com/watch?v=MjIfWe6bn40)
+- [GOTO 2016 • The Frontend Taboo: a Story of Full Stack Microservices • Luis Mineiro & Moritz Grauel](https://www.youtube.com/watch?v=vCzTK4XPfX8)
+- [Developing microservices with aggregates - Chris Richardson](https://www.youtube.com/watch?v=7kX3fs0pWwc)
+
+

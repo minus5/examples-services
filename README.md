@@ -185,7 +185,7 @@ Very important aspect of the orchestrator is that it concentrates the overall **
 
 ### REST: second attempt
 
-`App` initiates the cycle every second with hope that there is some new data available on `Sensor`. If the data is unevenly distributed through time (it almost always is) it could emit ten events in one second and than have a period of silence several minutes long. It would be much better to push the data from `Sensor` to `App` the second it becomes available.
+`App` initiates the cycle every second with hope that there is some new data available on `Sensor`. If the data is unevenly distributed through time (it almost always is) it could emit ten events in one second and than have a period of silence several minutes long. It would be much better to push the data from `Sensor` to `App` the moment it becomes available.
 
 For that purpose we might try to rearrange the layout to allow `Sensor` to initiate the process. In that case the workflow might look like this:
 
@@ -252,7 +252,7 @@ One common solution is to allow consumer to ask the publisher to **replay the da
 - to handle messages idempotently
 - to make **full state recovery** when too much data has been missed
 
-Other solution (in a slightly different context) is to use [distributed saga pattern](https://youtu.be/0UTOLRTwOX0?t=46s). 
+Another solution (in a slightly different context) is to use [distributed saga pattern](https://youtu.be/0UTOLRTwOX0?t=46s). 
 
 ### Routing anti-patterns 
 
@@ -280,7 +280,7 @@ When multiple *nsqd* instances are available in the system they should all regis
 Messaging has impact on many other aspects of the system:
 
 - decoupling
-- event driven design (event sourcing, replay)
+- event driven design
 - asynchronicity (better support for bursts of data)
 - persistence (disaster recovery)
 - routing (event broadcast, load balancing)
@@ -357,7 +357,7 @@ That's what [Docker](https://www.docker.com/) is here for:
 
 - **isolate** each service within its container
 - define environment for each service (its own OS)
-- simple service managemnt (deploy, run, stop, restart)
+- simple service management (deploy, run, stop, restart)
 
 [Greg Young](https://youtu.be/MjIfWe6bn40?t=27m5s):
 
@@ -369,7 +369,7 @@ That's what [Docker](https://www.docker.com/) is here for:
 
 > Each step increases overal cost. But you don't have to make that decision up front. 
 
-In [example 4](https://github.com/minus5/examples-services/tree/master/04-docker) we setup our system infrastructure using Docker. Each service gets its own Docker container with its own isolated OS and environment. Services are deployed to production by instantiating containers on Docker hosts. 
+In [example 4](https://github.com/minus5/examples-services/tree/master/04-docker) we setup our system infrastructure using Docker. Each service gets its own Docker container.
 
 ### Docker terms
 
@@ -422,7 +422,7 @@ CONTAINER ID        IMAGE               COMMAND             CREATED             
 cad9a64773b3        sensor              "sensor"            47 seconds ago      Created                                 elated_jackson
 ```
 
-Containers are components that actually run our services. We control  Docker containers using [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/) (create, start, stop, restart...).
+Containers are components that actually run our services. They are controlled using [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/) (create, start, stop, restart...).
 
 ### Docker Compose
 
@@ -465,6 +465,14 @@ In our *dev* datacenter we have several containers responsible for managing the 
 *Image builder* puts together prepared binaries with *Dockerfiles*, **builds new Docker images**, tags them and pushes them to our local Docker registry.
 
 *Deployer* **executes deploy commands** on remote Docker hosts (using *docker-machine*). It also commits every change to the infrastructure repository (every deploy is a change in the system infrastructure!). 
+
+# Final result
+
+Picture below shows the overview of the final arhitecture. Two datacenters are shown, *dev* and *aws*. Each datacenter has several Docker hosts. *Dev* datacenter has two: *dev1* and *dev2*. Each Docker host has several containers running. Host *dev1* has eight.
+
+<img src="./images/dcs.png" height=370/>
+
+From this we can scale further by adding new datacenters, hosts and containers.
 
 # Summary
 

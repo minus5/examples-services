@@ -28,11 +28,13 @@ Description by [Clemens Vasters](https://www.youtube.com/watch?v=rXi5CLjIQ9kon):
 > Services does **NOT** imply: Cloud, JSON, HTTP, Docker, SQL, NoSQL, AMQP, Scale, Reliability, Stateless, ...
 
 
-There are no specific guidelines on HOW to do it. Even more so, the people who have done it have all done it **in their own specific way** using different tools and different environments. There are no frameworks for doing microservices. There are plenty of tools to help you along the way and yet none of them are required.  There are patterns for solving some known problems. There are lists of good/bad practices and tons of advice. So one has to choose carefully to suit his own needs. With all of this it is highly likely for **each setup to end up unique** in many of its aspects.
+There are no specific guidelines on HOW to do it. Even more so, the people who have done it have all done it **in their own specific way** using different tools and different environments. There are no frameworks for doing microservices. There are plenty of tools to help you along the way and yet none of them are required.  There are patterns for solving some known problems. There are lists of good/bad practices and tons of advice. So one has to choose carefully to suit his own needs. 
+
+It is highly likely for **each setup to end up unique** in many of its aspects.
 
 ### A case study
 
-In a similar way, the setup we present here is **a single solution** that has been working with significant load in production for some time now. 
+The setup we present here is a **single solution** that has been working with significant load in production for some time now. 
 
 [SuperSport](https://www.supersport.hr/) is the largest betting company in Croatia (20TB monthly data transfer, 9M monthly business transactions). It started 12 years ago with several bet-shops. It was the first company in Croatia to introduce betting machines in public places (10 years ago) and also the first one to introduce online betting on the first day it became legally possible (7 years ago). Today SuperSport holds the dominant position in the betting industry in Croatia. 
 
@@ -70,7 +72,7 @@ When change on one component requires changing another it becomes bit harder to 
 
 > If you can't build a monolith what makes you think putting network in the middle will help? 
  
-**Isolation** of services is not enforced within monolith. It becomes matter of **developer discipline**. When service boundaries are not explicitly defined they are very likely to be violated. Especially with larger number of developers involved.
+Monolith does not enforce service **isolation**, it is left up to **developer discipline**. When service boundaries are not explicitly defined they are very likely to be violated. Especially with larger number of developers involved.
 
 Coupling is introduced on various levels:
 
@@ -99,7 +101,7 @@ Coupling may bring another side-effect which emerges in production environments:
 
 ### Technical debt
 
-Decoupling of services make **quick-fixes** a bit **harder**. The only interface service has is strictly defined which makes it harder to violate. One service cannot just reach out to another's service data storage; that communication must be explicitly defined. 
+Decoupling of services make **quick-fixes** a bit **harder**. The interface each service has is strictly defined and can not be violated. A service is not able to reach out to another's data storage; that communication must be explicitly defined. 
 
 From a business point of view it is very nice to have ocasional quick-fix and to leave the actual full-size fixes for later. Such full-size fixes tend to fall out of focus since everything seems to work nicely and there is no evident business reason to do them. This slowly **accumulates technical debt** which can be very harmful for business in the long run.
 
@@ -213,7 +215,7 @@ In the [second example](https://github.com/minus5/examples-services/tree/master/
 
 <img src="./images/nsq.png" height=220/>
 
-Services are not in any way aware of other services in the system. For that reason message producers are unable to choose which service should receive messages being send. Instead they use various **routing** algorithms.
+Services are not in any way aware of other services in the system. Message producers are unable to choose which service should receive messages being send. Instead they use various **routing** algorithms.
 
 Message routing in NSQ is organised around *topics* and *channels*:
 

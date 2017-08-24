@@ -64,22 +64,25 @@ Why not:
 
 ### Coupling
 
+When change on one component requires changing another it becomes bit harder to achieve. In that sense one component is **coupled** with another. With each coupling introduced it becomes harder and harder to make changes. 
+
+[Greg Young](https://youtu.be/MjIfWe6bn40?t=25m24s):
+
+> If you can't build a monolith what makes you think putting network in the middle will help? 
+ 
+**Isolation** of services is not enforced within monolith. It becomes matter of **developer discipline**. When service boundaries are not explicitly defined they are very likely to be violated. Especially with larger number of developers involved.
+
 Coupling is introduced on various levels:
 
+- module dependencies
 - shared data storages (e.g. databases)
 - database table references (e.g. foreign keys)
 - remote APIs (e.g. HTTP requests)
-- module dependencies
 
-When changing one component requires modifications on another component that change becomes a bit harder to achieve. With each introduced dependency the overall system becomes more and more coupled which makes changing things harder and harder until it becomes impossible to make any change at all. 
-
-[Chad Fowler](https://youtu.be/-UKEPd2ipEk?t=3m21s):
-
-> I learned that the real problem that plagues us all is Coupling. We want to be able to change software. We want to be able to bring things forward, and make them better and better and respond to changing business requirements. We really want to reduce Coupling in software.
 
 ### Latency
 
-Besides issues in development process, coupling may bring another side-effect which emerges in production environments: **latency**. Namely, executing database queries that execute multiple actions on multiple rows/tables within single transaction triggers locking mechanisms which may cut down the overall performance. Microservices usually trade database consistency for **eventual consistency** to improve latency.
+Coupling may bring another side-effect which emerges in production environments: **latency**. Executing database queries on multiple rows/tables within single transaction triggers locking mechanisms which may cut down the overall performance. Microservices usually trade database consistency for **eventual consistency** to improve latency.
 
 [Caitie McCaffrey](https://youtu.be/0UTOLRTwOX0?t=46s) on Distributed Sagas (A Protocol for Coordinating Microservices):
 
@@ -94,11 +97,11 @@ Besides issues in development process, coupling may bring another side-effect wh
 
 <img src="./images/small_vs_large.png" height=300/>
 
-### Quick-fixes and technical debt
+### Technical debt
 
-Very interesting side-effect of decoupling is that it becomes **a bit harder to introduce quick-fixes** that cross cut along multiple services (it is harder to introduce coupling). The only interface that service has is strictly defined (in his communication API) which makes it harder to violate. For example, one service cannot just reach out to another's service database; that communication must be explicitly defined. 
+Decoupling of services make **quick-fixes** a bit **harder**. The only interface service has is strictly defined which makes it harder to violate. One service cannot just reach out to another's service data storage; that communication must be explicitly defined. 
 
-From a business point of view it is very nice to have ocasional quick-fix and leave the actual full-size fixes for later. Unfortunately, such full-size fixes usually quickly fall out of focus since everything seems to work nicely and there is no evident business reason to do them. This slowly **accumulates technical debt** which can be very harmful (for business!) in the long run.
+From a business point of view it is very nice to have ocasional quick-fix and to leave the actual full-size fixes for later. Such full-size fixes tend to fall out of focus since everything seems to work nicely and there is no evident business reason to do them. This slowly **accumulates technical debt** which can be very harmful for business in the long run.
 
 So there is a cute tradeoff between being able to change things now or later.
 
@@ -348,9 +351,27 @@ We have been using `consul-template` with various applications, both third party
 
 ## Example 4: Containerisation
 
-Adding new modules to the monolith application rarely has any impact on the development environment or on the production infrastructure. We want be able to **instantiate new services** just as easily. That's what [Docker](https://www.docker.com/) is here for.
+Adding new modules to the monolith application rarely has any impact on the development environment or on the production infrastructure. We want be able to **instantiate new services** just as easily. 
+
+That's what [Docker](https://www.docker.com/) is here for:
+
+- **isolate** each service within its container
+- define environment for each service (its own OS)
+- simple service managemnt (deploy, run, stop, restart)
+
+[Greg Young](https://youtu.be/MjIfWe6bn40?t=27m5s):
+
+> I could run all services in a single OS process. If I did this my costs would be low. But I would have no way of knowing that another process is not looking at my memory directly. On top of that, what happens when one service chrashes? It takes down the whole OS process down which takes down all services.
+
+> I could go to the next level. I could run one OS process per service on the same machine. Now I've got better failure isolation but my costs are higher because I have to maintain all these processes. Anoter benefit is that I can use standard OS tools to manage my processes. Like for example killing and restarting the problematic process. 
+
+> Another level of isolation is running Docker conatiner per service. Another level is running on multiple nodes.
+
+> Each step increases overal cost. But you don't have to make that decision up front. 
 
 In [example 4](https://github.com/minus5/examples-services/tree/master/04-docker) we setup our system infrastructure using Docker. Each service gets its own Docker container with its own isolated OS and environment. Services are deployed to production by instantiating containers on Docker hosts. 
+
+### Docker terms
 
 Here are some basic terms from Docker ecosystem:
 

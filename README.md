@@ -373,7 +373,7 @@ That's what [Docker](https://www.docker.com/) is here for:
 
 In [example 4](https://github.com/minus5/examples-services/tree/master/04-docker) we setup our system infrastructure using Docker. Each service gets its own Docker container.
 
-### Docker terms
+### Docker toolset
 
 Here are some basic terms from Docker ecosystem:
 
@@ -385,9 +385,7 @@ Here are some basic terms from Docker ecosystem:
 - [docker-compose](https://docs.docker.com/compose/) — define all containers that run on a single host
 - [docker-machine](https://docs.docker.com/machine/) — run docker commands remotely
 
-### Dockerfile
-
-*Dockerfile* is a receipt for building single Docker image. For each service (`Sensor`, `Worker`, `App`) we define [separate Dockerfile](https://github.com/minus5/examples-services/tree/master/04-docker/images). Here is an example of Dockerfile for `Sensor`:
+**Dockerfile** is a receipt for building single Docker image. For each service (`Sensor`, `Worker`, `App`) we define [separate Dockerfile](https://github.com/minus5/examples-services/tree/master/04-docker/images). Here is an example of Dockerfile for `Sensor`:
 
 ```
 FROM gliderlabs/alpine:3.4     # start from existing image (download it from Docker hub)
@@ -396,9 +394,7 @@ WORKDIR bin                    # position myself into directory
 ENTRYPOINT ["sensor"]          # when starting container start my binary
 ```
 
-### Docker image
-
-Docker image is created from *Dockerfile* receipt.
+**Docker image** is created from *Dockerfile* receipt.
 
 ```
 $ docker build -t sensor .
@@ -413,9 +409,7 @@ sensor              latest              8d1f3a5ccb5c        5 seconds ago       
 gliderlabs/alpine   3.4                 bce0a5935f2d        13 days ago         4.81MB
 ```
 
-### Docker container
-
-Containers are created by mounting images on Docker host:
+**Docker containers** are created by mounting images on Docker host:
 
 ```
 $ docker create sensor
@@ -425,8 +419,6 @@ cad9a64773b3        sensor              "sensor"            47 seconds ago      
 ```
 
 Containers are components that actually run our services. They are controlled using [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/) (create, start, stop, restart...).
-
-### Docker Compose
 
 [Docker-compose](https://docs.docker.com/compose/) is a tool that enables you to define a set of containers that should be simultaneously started on a single host. Also, you can define the environment for every container (env variables, open ports, mounted volumes...).
 
@@ -448,6 +440,10 @@ Now we can start **the whole system** on our local Docker host with **a single c
 docker-compose up
 ```
 
+[Docker machine](https://docs.docker.com/machine/) enables us to run Docker commands on remote hosts.
+
+
+
 ## Infrastructure as a source
 
 Very important aspect of containerisation is that it allows us to have the **complete infrastructure** defined **in source code** in a single place (i.e., in a single git repository). 
@@ -457,6 +453,13 @@ Very important aspect of containerisation is that it allows us to have the **com
 - list of **datacenters** (*dev*, *supersport*, *aws*)
 - each datacenter has a list of Docker **hosts** 
 - each host has a list of running **containers** and their environment (defined by *docker-compose.yml*)
+
+## Consul registrator
+
+Each service has to register itself to Consul by sending him his name and location. 
+Docker provides eventing mechanism which streams information of registered containers on each node. When Docker and Consul are used together those two mechanisms can be used to get automatic registration of services on Consul. 
+
+[Registrator](https://github.com/gliderlabs/registrator) **automatically registers and deregisters services** for any Docker container by inspecting containers as they come online/offline.
 
 ## Continuous integration
 

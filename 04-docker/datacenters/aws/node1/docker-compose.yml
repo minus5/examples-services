@@ -1,3 +1,5 @@
+# datacenter: aws
+# host: node1
 version: '2'
 services:
   nsqlookupd:
@@ -6,29 +8,29 @@ services:
     command: /nsqlookupd
     restart: always
     ports:
-      - 4160:4160
-      - 4161:4161
+    - 4160:4160
+    - 4161:4161
     environment:
-      - SERVICE_4160_NAME=nsqlookupd-tcp
-      - SERVICE_4161_NAME=nsqlookupd-http
+    - SERVICE_4160_NAME=nsqlookupd-tcp
+    - SERVICE_4161_NAME=nsqlookupd-http
   nsqd:
     container_name: nsqd
     image: nsqio/nsq
     command: /nsqd --lookupd-tcp-address=nsqlookupd:4160
     restart: always
     ports:
-      - 4150:4150
+    - 4150:4150
     environment:
-      - SERVICE_4150_NAME=nsqd
+    - SERVICE_4150_NAME=nsqd
   nsqadmin:
     container_name: nsqadmin
     image: nsqio/nsq
     command: /nsqadmin --lookupd-http-address=nsqlookupd:4161
     restart: always
     ports:
-      - 4171:4171
+    - 4171:4171
     environment:
-      - SERVICE_4171_NAME=nsqadmin
+    - SERVICE_4171_NAME=nsqadmin
   sensor:
     container_name: sensor
     image: sensor
@@ -36,7 +38,7 @@ services:
     environment:
     - CONSUL_ADDR=consul
     ports:
-      - 9001:9001
+    - 9001:9001
   worker:
     container_name: worker
     image: worker
@@ -44,7 +46,7 @@ services:
     environment:
     - CONSUL_ADDR=consul
     ports:
-      - 9002:9002
+    - 9002:9002
   app:
     container_name: app
     image: app
@@ -52,22 +54,15 @@ services:
     environment:
     - CONSUL_ADDR=consul
     ports:
-      - 9000:9000    
+    - 9000:9000    
   consul:
     container_name: consul
     image: consul:latest
     command: agent -dev
     environment:
-    - CONSUL_LOCAL_CONFIG={"client_addr":"0.0.0.0","server":true,"bootstrap":true,"datacenter":"aws","node_name":"host1","domain":"sd","ui":true}
+    - CONSUL_LOCAL_CONFIG={"client_addr":"0.0.0.0","server":true,"bootstrap":true,"datacenter":"aws","node_name":"node1","domain":"sd","ui":true}
     ports:
-    - 8600:8600/udp
     - 8500:8500
-    - 8400:8400
-    - 8300:8300
-    - 8301:8301
-    - 8301:8301/udp
-    - 8302:8302
-    - 8302:8302/udp
     restart: always
   registrator:
     command: -deregister on-success -resync 15 consul://localhost:8500

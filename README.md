@@ -86,10 +86,13 @@ Coupling is introduced on various levels:
 
 Coupling may bring another side-effect which emerges in production environments: **latency**. Executing database queries on multiple rows/tables within single transaction triggers locking mechanisms which may cut down the overall performance. Microservices usually trade database consistency for **eventual consistency** to improve latency.
 
-[Caitie McCaffrey](https://youtu.be/0UTOLRTwOX0?t=46s) on Distributed Sagas (A Protocol for Coordinating Microservices):
+Consider the following workflow for handling a betting ticket request:
 
-> Once upon a time we used to construct these monolithic applications and they ran on a scale that cloud safely fit inside a single relational database and that was really nice from abstraction point of view because all of the complex logic about consistencies, different consistency models and concurrency models were all handled by single database. We would just horizontally scale our application. Now we are in a time where we can no longer fit in a single database, availability of a single database is no longer sufficient for our customers and for our applications. Driving force is we want availability and to be able to scale beyond single machine. Microservice architecture gives you ability to develop and deploy services by independent teams at faster speeds so we can be more agile. With noSQL databases we have to denormalise our data in our different services so you get higher availability and weaker consistency models.
+<img src="./images/latency.png" height=100/>
 
+This workflow spans four disjoint services: *tickets*, *odds*, *accounts* and *authorization*. Doing everyting within single database transaction would lock up all services until the ticket is placed in the database. By separating those entities into autonomous services we have improved the latency and reduced data consistency level.
+
+What could possibly go wrong? A common pattern for handling problems that emerge from service decoupling is [distributed saga pattern](https://youtu.be/0UTOLRTwOX0?t=46s).
 
 ### Small vs large projects
 

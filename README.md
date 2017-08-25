@@ -469,15 +469,24 @@ In our *dev* datacenter we have several containers responsible for managing the 
 
 *Image builder* puts together prepared binaries with *Dockerfiles*, **builds new Docker images**, tags them and pushes them to our local Docker registry.
 
-*Deployer* **executes deploy commands** on remote Docker hosts (using *docker-machine*). It also commits every change to the infrastructure repository (every deploy is a change in the system infrastructure!). 
+*Deployer* **executes deploy commands** on remote Docker hosts (using *docker-machine*). It also commits every change to the infrastructure repository. Every deploy is a change in the system infrastructure. Reverting is equivalent to deployment of older image.
 
 # Final result
 
 Picture below shows the overview of the final arhitecture. Two datacenters are shown, *dev* and *aws*. Each datacenter has several Docker hosts. *Dev* datacenter has two: *dev1* and *dev2*. Each Docker host has several containers running. Host *dev1* has eight.
 
-<img src="./images/dcs.png" height=370/>
+<img src="./images/dcs.png" height=400/>
 
-From this we can scale further by adding new datacenters, hosts and containers.
+What happens when new `Worker` is added to the system?
+
+- new `Worker` container is created on Docker host
+- `Registrator` gets the event from Docker and registers new `Worker` to `Consul`
+- `Consul` informs all interested services that new `Worker` is available
+- `Worker` asks `Consul` where he can find `nsqlookupd`
+- `Worker` asks `nsqlookupd` where he can find `nsqd` with topic `sensor_data`
+- `Worker` connects to `nsqd` and starts receiving messages
+
+
 
 # Summary
 

@@ -237,7 +237,7 @@ In the three examples shown we have had three different responsibility patterns.
 
 1. `Sensor` is passive, it responds only when asked for the data
 2. `Sensor` is responsible to deliver the data to all interested parties
-3. `Sensor` dispatches the data to third party (NSQ)
+3. `Sensor` dispatches the data NSQ
 
 <img src="./images/responsibility.png" height=270/>
 
@@ -245,16 +245,20 @@ Drawback with first pattern is that interested parties don't know when the data 
 
 Drawback with second pattern is that service is responsible to deliver data to all interested parties (introduced coupling). Additional problems may arise when target services are unavailable.
 
-The third pattern solves those two problems. But what happens if some interested party is down for longer time and **misses some messages**? That question heavily depends on the context and has various solutions.
+In the third pattern responsibility of message delivery is loaded off to a third party (NSQ). Service can now focus its attention to its domain problems.
 
-One common solution is to allow consumer to ask the publisher to **replay the data missed**. For such purposes publishers should have additional interface for data replay queries. Consumer should be able:
+### Stale messages
+
+What happens if some consumer goes down and **misses some messages**? Messages will wait in the queue and be delivered when service comes up again. In most cases that is a wonderful feature but it might have some dangerous side effects. The effects of stale messages have to be **considered separately depending on the context**.
+
+### Missed messages
+
+What happens when some messages have not been handled properly? One common solution is to allow consumer to ask the publisher to **replay the data missed**. For such purposes publishers should have additional interface for data replay queries. Consumer should be able:
 
 - to detect that he missed some messages
 - to send query to the publisher to replay data missed
 - to handle messages idempotently
 - to make **full state recovery** when too much data has been missed
-
-Another solution (in a slightly different context) is to use [distributed saga pattern](https://youtu.be/0UTOLRTwOX0?t=46s). 
 
 ### Routing anti-patterns 
 

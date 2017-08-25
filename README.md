@@ -30,15 +30,11 @@ Description by [Clemens Vasters](https://www.youtube.com/watch?v=rXi5CLjIQ9kon):
 
 There are no specific guidelines on HOW to do it. Even more so, the people who have done it have all done it **in their own specific way** using different tools and different environments. There are no frameworks for doing microservices. There are plenty of tools to help you along the way and yet none of them are required.  There are patterns for solving some known problems. There are lists of good/bad practices and tons of advice. So one has to choose carefully to suit his own needs. 
 
-It is highly likely for **each setup to end up unique** in many of its aspects.
+It is highly likely for **each setup to end up unique** in many of its aspects. The setup we present here is a **single solution** that has been working with significant load in production for some time now. 
 
 ### A case study
 
-The setup we present here is a **single solution** that has been working with significant load in production for some time now. 
-
 [SuperSport](https://www.supersport.hr/) is the largest betting company in Croatia (20TB monthly data transfer, 9M monthly business transactions). It started 12 years ago with several bet-shops. It was the first company in Croatia to introduce betting machines in public places (10 years ago) and also the first one to introduce online betting on the first day it became legally possible (7 years ago). Today SuperSport holds the dominant position in the betting industry in Croatia. 
-
-The intention of this post is to show some technical aspects of the system as it stands today. 
 
 # Why microservices?
 
@@ -50,8 +46,6 @@ Top reasons for having microservices:
 - use "the best" tool for the job
 - move and release independently
 - technical debt
-
-... and many more.
 
 Why not:
 

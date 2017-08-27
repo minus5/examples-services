@@ -1,22 +1,39 @@
-# Kontejnerizacija servisa pomoću Dockera
+# Containerisation with Docker
 
-U ovom primjeru se za svaki pojedni servis (sensor, worker, app) napraviti novi Docker image. 
+In this example we put every service in its own Docker container. We reuse the source code from [previous example](../03-consul). 
 
-Za buildanje servisa se koristi source iz [prethodnog primjera](../03-consul). Da bi se servis mogao pokrenuti unutar linux conatinera aplikacija sa builda za linux arhitekturu.
-
-Za nsq i consul servise se koriste image-i koji su dostupni na [docker hub-u](https://hub.docker.com/).
-
-Primjer se pokreće pomoću docker-compose-a:
+For each custom service (`Sensor`, `Worker`, `App`) we have to create Docker image first by writing [Dockerfile](./images/sensor/Dockerfile):
 
 ```
-# bulida sve linux binaries
+FROM gliderlabs/alpine:3.4
+COPY sensor /bin
+WORKDIR bin
+ENTRYPOINT ["sensor"]
+```
+
+For all other containers (*nsqd*, *nsqlookupd*, *nsqadmin*, *consul*, *registrator*) we use images available on Docker hub.
+
+### Requirements
+
+- [ruby](https://github.com/rbenv/rbenv)
+- [thor](https://github.com/erikhuda/thor)
+- [golang](https://golang.org/doc/install)
+- [go-nsq](https://github.com/nsqio/go-nsq)
+- [docker](https://www.docker.com/)
+- [docker-compose](https://docs.docker.com/compose/)
+
+In this example we don't need to install *nsq* and *Consul*. They are bundled within their Docker images. Also, we don't need *goreman* to run processes.
+
+### Running
+
+```
+# bulid all linux binaries
 ./build.rb binary_all
 
-# builda sve Docker images
+# build all Docker images
 ./build.rb image_all
 
-cd datacenters/dev/host1
+cd datacenters/aws/node1
 docker-compose up
 ```
 
-Svi servisi pronađu Consul pomoću enviromnent varijable CONSUL_ADDR koja im se postavi u docker-compose.yml. Nakon toga pitaju Consul za adresu nsqd-a. Nakon toga se spajaju na nsqd i mogu početi sa slanjem/obradom poruka.

@@ -1,4 +1,4 @@
-# Services that communicate over NSQ
+# Services communicate over NSQ
 
 Services from [previous example](../01-http/) are adapted to communicate over [NSQ](http://nsq.io/).
 

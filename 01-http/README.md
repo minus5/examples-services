@@ -1,4 +1,4 @@
-# Services that communicate over HTTP
+# Services communicate over HTTP
 
 System consists of three services:
 

@@ -1,23 +1,36 @@
-# Primjer sustava koji komunicira NSQ-om
+# Services that communicate over NSQ
 
-Servisi iz prethodnog primjera su prerađeni da komuniciraju putem NSQ-a. 
+Services from [previous example](../01-http/) are adapted to communicate over [NSQ](http://nsq.io/).
 
-Pokretanje primjera:
+<img src="../images/nsq.png" height=220/>
+
+### Requirements
+
+- [ruby](https://github.com/rbenv/rbenv)
+- [thor](https://github.com/erikhuda/thor)
+- [golang](https://golang.org/doc/install)
+- [goreman](https://github.com/mattn/goreman)
+- [go-nsq](https://github.com/nsqio/go-nsq)
+- [nsq](http://nsq.io/deployment/installing.html)
+
+### Running
 
 ```
 ./build.rb binary_all
 goreman start
 ```
 
-Nakon pokretanja nsqadmin sučelje je dostupno na <http://localhost:4171/>.
+When example is started *nsqadmin* web interface is available on <http://localhost:4171/>.
 
-Poruke sa nekog topica se mogu pratiti nsq_tail alatom:
+<img src="../images/nsqadmin.png" width=640/>
+
+Messages from some topic can be traced in terminal by running *nsq_tail* tool (included in *nsq* installation):
 
 ```
 nsq_tail -lookupd-http-address=127.0.0.1:4161 -topic sensor_values
 ```
 
-Dobar primjer distribucije loada se može vidjeti pokretanjem dodatnog workera.
+Nice example of load-balancing can be achieved by running another `Worker` process in terminal:
 
 ```
 ./worker/worker

@@ -487,8 +487,6 @@ What happens when new `Worker` is added to the system?
 - `Worker` asks `nsqlookupd` where he can find `nsqd` with topic `sensor_data`
 - `Worker` connects to `nsqd` and starts receiving messages
 
-
-
 # Summary
 
 ### Patterns 

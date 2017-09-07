@@ -116,7 +116,7 @@ We will start with a very basic example and gradually upgrade it until we reach 
 
 ## Example 1: REST
 
-We start with system that has 3 services: `Sensor`, `Worker` and `App` ([source code](https://github.com/minus5/examples-services/tree/master/01-http)).
+We start with 3 services: `Sensor`, `Worker` and `App` ([source code](https://github.com/minus5/examples-services/tree/master/01-http)).
 
 <img src="./images/rest.png" height=300/>
 
@@ -234,7 +234,7 @@ In the three examples shown we have had three different responsibility patterns.
 
 1. `Sensor` is passive, it responds only when asked for the data
 2. `Sensor` is responsible to deliver the data to all interested parties
-3. `Sensor` dispatches the data NSQ
+3. `Sensor` dispatches the data to NSQ
 
 <img src="./images/responsibility.png" height=270/>
 
@@ -296,7 +296,7 @@ Description from [Wikipedia](https://en.wikipedia.org/wiki/Service_discovery):
  
 In our system we are using [Consul](https://www.consul.io/) for service discovery ([example 3](https://github.com/minus5/examples-services/tree/master/03-consul)).
 
-Usually there are some components in the system that are not able to communicate using messaging (databases, key-value storages, proxies, external web services...). Service discovery helps us **locate those services by their name**.
+Usually there are some components in the system that are not able to communicate using messaging. Service discovery helps us **locate those services by their name**.
 
 Every service in the system **registers itself** to Counsul by sending him its:
 
@@ -423,17 +423,18 @@ Containers are components that actually run our services. They are controlled us
 
 [Docker-compose](https://docs.docker.com/compose/) is a tool that enables you to define a set of containers that should be simultaneously started on a single host. Also, you can define the environment for every container (env variables, open ports, mounted volumes...).
 
-In our example we [define](https://github.com/minus5/examples-services/blob/master/04-docker/datacenters/dev/host1/docker-compose.yml) that we want to run 7 containers on the same Docker host:
+In our example we [define](https://github.com/minus5/examples-services/blob/master/04-docker/datacenters/dev/host1/docker-compose.yml) that we want to run 8 containers on the same Docker host:
 
 - `Sensor`
 - `Worker`
 - `App`
 - [consul](https://hub.docker.com/_/consul/)
+- [registrator](https://github.com/gliderlabs/registrator)
 - [nsqd](https://hub.docker.com/r/nsqio/nsq/)
 - nsqlookupd
 - nsqadmin
 
-It is important to notice that we **already have available** Docker images for Consul, nsqd, nsqlookupd and nsqadmin on Docker hub. Our custom images (`Sensor`, `Worker` and `App`) are created by extending another available image ([alpine](https://hub.docker.com/_/alpine/)) just by adding our application binaries into it.
+It is important to notice that we **already have available** Docker images for Consul, registrator, nsqd, nsqlookupd and nsqadmin on Docker hub. Our custom images (`Sensor`, `Worker` and `App`) are created by extending another available image ([alpine](https://hub.docker.com/_/alpine/)) just by adding our application binaries into it.
 
 Now we can start **the whole system** on our local Docker host with **a single command**:
 

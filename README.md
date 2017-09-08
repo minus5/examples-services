@@ -1,10 +1,14 @@
 # Microservices in production: a case study
 
-Description of microservices from [microservices.io](microservices.io):
+From [microservices.io](microservices.io):
 
 > Microservices - also known as the microservice architecture — is an architectural style that structures an application as a collection of loosely coupled services, which implement business capabilities. The microservice architecture enables the continuous delivery/deployment of large, complex applications. It also enables an organisation to evolve its technology stack.
 
-Description by [Clemens Vasters](https://www.youtube.com/watch?v=rXi5CLjIQ9kon):
+Microservices are usually described as an alterantive to the **monolith** application architecure. On one side of the spectrum there is a single application that handles everything and on the other there is a number of autonomus services working on separate tasks.
+
+<img src="./images/monolith.png" width=640/>
+
+[Clemens Vasters](https://www.youtube.com/watch?v=rXi5CLjIQ9kon) describes some crucial properties in the microservice arhitecture:
 
 > Defining property of services is that they're ***Autonomous***
 

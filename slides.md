@@ -21,7 +21,10 @@ In this talk I will try to give you answers to these questions:
 # SuperSport
 
 ### SuperSport
-Our most significat client (and at the same time our partner) is SuperSport betting company. SuperSport is the largest betting company in Croatia (20TB monthly data transfer, 9M monthly business transactions). It started 12 years ago with several bet-shops. It was the first company in Croatia to introduce betting machines in public places (10 years ago) and also the first one to introduce online betting on the first day it became legally possible (7 years ago). Today SuperSport holds the dominant position in the betting industry in Croatia.
+
+The case study I will use in this talk is SuperSport betting company.
+
+SuperSport is the largest betting company in Croatia (20TB monthly data transfer, 9M monthly business transactions). We like to think of it also as the lagest online business in Croatia. It started 12 years ago with several bet-shops. It was the first company in Croatia to introduce betting machines in public places (10 years ago) and also the first one to introduce online betting on the first day it became legally possible (7 years ago). Today SuperSport holds the dominant position in the betting industry in Croatia.
 
 ### Minus5 and SuperSport
 
@@ -31,15 +34,13 @@ We have created from scratch almost everything SuperSport has related to techolo
 
 (Picutres) This is our betting website, our mobile apps, andriod and iphone, ...
 
-# SS cont.
-
 ... our betting machines and out betshops. As you can see I am reffering to theses products as ours as we have grown really intimate and emotional relation to them.
 
 # Examples on github
 
 ### Find and run examples
 
-Since I am a developer I had the need to to leave you with someting you can easily try yourself on your local machine. So I have created a couple of examples that go along with this talk. You can find them here. I have tested them on mac and on ubuntu and everything worked as expected so if you arre interested feel free to try the out. But please don't do it during this talk, I don't want to lose your attention.
+Since I am a developer I had the need to to leave you with someting you can easily try yourself on your local machine. So I have created a couple of examples that go along with this talk. You can find them here. I have tested them on mac and on ubuntu and everything worked as expected so if you are interested feel free to try them out. But please don't do it during this talk, I don't want to lose your attention.
 
 ### Strip and build up
 
@@ -47,7 +48,7 @@ I have designed the examples by looking at our system any by trying to strip it 
 
 ### Written in Go
 
-If you do take a look at the examples (later) you will find that they are written in Go. Go is the language we use for, well more than 90% of services in our backend. We have been using is since the very beginnings, like X years ago, and we have found it to be very appripriate for backend tasks. Also, somehow plenty of other tools that we use have also been written in Go. It always depends on the context of course but for us at this moment Go is the "way to go".
+If you do take a look at the examples (later) you will find that they are written in Go. Go is the language we use for, well more than 90% of services in our backend. We have been using it since the very beginnings, like X years ago, and we have found it to be very appropriate for backend tasks. Also, somehow plenty of other tools that we use have also been written in Go. It always depends on the context of course but for us at this moment Go is the "way to go".
 
 # Microservices
 
@@ -67,7 +68,7 @@ So, in case you missed it the crucial point is that microservices are:
 
 - **not coupled**, meaning that each service is autonomous to some degree,
 - that they **implement business capabilities**, which means NOT organizing stuff around technical features but around business feratures,
-- that they **enable continioius delivery/deployment**, meaning that developers are able to **make changes to single service and deploy** them without messing with other services in production, which enables faster delivery of peatures to production,
+- that they **enable continioius delivery/deployment**, meaning that developers are able to **make changes to single service and deploy** them without messing with other services in production, which enables faster delivery of features to production,
 - and finaly it enables organisation to **evolve its techology stack**, since you can easily switch techologies in one service without affection others.
 
 Each of those four crucial points is not about techology but about somethig completely on the other side of the spectrum, like autonomy, business, continuos delivery, evolving tech stack and agility. In case you thought microservices are about some technical aspects you were wrong, they are much more abstract term which talks more about organizing your system and your teams than the techology itself.
@@ -292,7 +293,7 @@ So we can get a lot of information about the health of our system just by lookin
 
 ### REST is still alive
 
-Even though messaging is the preferred way to communicate we still have a lot of communication done using REST interfaces. Also, there are some components in the system that are not able to communicate using messaging. For example there are databeses, key-value storages, web proxies, externale web services and so on. 
+Even though messaging is the preferred way to communicate we still have a lot of communication done using REST interfaces. Also, there are some components in the system that are not able to communicate using messaging. For example there are databeses, key-value storages, web proxies, external web services and so on. 
 
 So we have reduced coupling to some extent but there is stil a lot of coupling to be resolved. 
 

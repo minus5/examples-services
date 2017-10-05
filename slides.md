@@ -1,171 +1,181 @@
-# Landing
+# Microservices in production: a case study
 
-Hello. Thank you for comming to my talk. 
+From [microservices.io](microservices.io):
 
-I am Marin. I am a Senior Developer and a Team Lead at **minus5** here in Zagreb. 
+> Microservices - also known as the microservice architecture — is an architectural style that structures an application as a collection of loosely coupled services, which implement business capabilities. The microservice architecture enables the continuous delivery/deployment of large, complex applications. It also enables an organisation to evolve its technology stack.
 
-Today I would like to share with you the experience we had in dealing with microservices. 
+Microservices are usually described as an alterantive to the **monolith** application architecure. On one side of the spectrum there is a single application that handles everything and on the other there is a number of autonomus services working on separate tasks.
 
-I am really happy and excited to be able to share it with you and I hope that you will enjoy this talk as much as I will. 
+<img src="./images/monolith.png" width=640/>
 
-Estimated time for this talk is 40 minutes so feel free to sit back and relax.
+[Clemens Vasters](https://www.youtube.com/watch?v=rXi5CLjIQ9kon) describes some crucial properties in the microservice arhitecture:
 
-# 3 answers
+> Defining property of services is that they're ***Autonomous***
 
-In this talk I will try to give you answers to these questions:
+> - A service owns all of the state it immediately depends on and manages
+> - A service owns its communication contract
+> - A service can be changed, redeployed, and/or completely replaced
+> - A service has a well-known set of communication paths
 
-- Do you need microservices?
-- If you start using microservices which problems should you expect?
-- How did we solve those problems?
+> Services shall have no shared state with others:
 
-# SuperSport
+> - Don't depend on or assume any common data store
+> - Don't depend on any shared in-memory state
 
-### SuperSport
+> No sideline communications between services:
 
-The case study I will use in this talk is SuperSport betting company.
+> - No opaque side-effects
+> - All communication is explicit
 
-SuperSport is the largest betting company in Croatia (20TB monthly data transfer, 9M monthly business transactions). We like to think of it also as the lagest online business in Croatia. It started 12 years ago with several bet-shops. It was the first company in Croatia to introduce betting machines in public places (10 years ago) and also the first one to introduce online betting on the first day it became legally possible (7 years ago). Today SuperSport holds the dominant position in the betting industry in Croatia.
+> Autonomy is about agility and cross-org collaboration.
 
-### Minus5 and SuperSport
+> Services does **NOT** imply: Cloud, JSON, HTTP, Docker, SQL, NoSQL, AMQP, Scale, Reliability, Stateless, ...
 
-We have created from scratch almost everything SuperSport has related to techology including web site (desktop and mobile), mobile applications for andriod and iOS, betting machines, betshop cash registers, various betting displays in the betshops, bookmaker interfaces, financial reports, administration tools... well, basically everythig related to technology they ever had. They are business oriented and we are technology oriented. We have grown to have their absolute trust in desinging and implementig everty product almost independently for them which is something that both sides enjoy and profit from.
 
-### Pictures
+There are no specific guidelines on HOW to do it. Even more so, the people who have done it have all done it **in their own specific way** using different tools and different environments. There are no frameworks for doing microservices. There are plenty of tools to help you along the way and yet none of them are required.  There are patterns for solving some known problems. There are lists of good/bad practices and tons of advice. So one has to choose carefully to suit his own needs. 
 
-(Picutres) This is our betting website, our mobile apps, andriod and iphone, ...
+It is highly likely for **each setup to end up unique** in many of its aspects. The setup we present here is a **single solution** that has been working with significant load in production for some time now. 
 
-... our betting machines and out betshops. As you can see I am reffering to theses products as ours as we have grown really intimate and emotional relation to them.
+### A case study
 
-# Examples on github
+[SuperSport](https://www.supersport.hr/) is the largest betting company in Croatia (20TB monthly data transfer, 9M monthly business transactions). It started 12 years ago with several bet-shops. It was the first company in Croatia to introduce betting machines in public places (10 years ago) and also the first one to introduce online betting on the first day it became legally possible (7 years ago). Today SuperSport holds the dominant position in the betting industry in Croatia. 
 
-### Find and run examples
+# Why microservices?
 
-Since I am a developer I had the need to to leave you with someting you can easily try yourself on your local machine. So I have created a couple of examples that go along with this talk. You can find them here. I have tested them on mac and on ubuntu and everything worked as expected so if you are interested feel free to try them out. But please don't do it during this talk, I don't want to lose your attention.
+Top reasons for having microservices:
 
-### Strip and build up
+- coupling
+- latency
+- small vs large project success
+- use "the best" tool for the job
+- move and release independently
+- technical debt
 
-I have designed the examples by looking at our system any by trying to strip it down to its most basic elements. And that is the first example. In the following examples I add the components and tools that improve the system bit by bit and then analyze what happend, what we got from it and where to go next.
+Why not:
 
-### Written in Go
+- now you have distributed system
+- everything is RPC
+- what if it breaks
+- cost of having many languages (share code, move between teams)
+- harder cross-cutting changes (deploy, transitional phases)
 
-If you do take a look at the examples (later) you will find that they are written in Go. Go is the language we use for, well more than 90% of services in our backend. We have been using it since the very beginnings, like X years ago, and we have found it to be very appropriate for backend tasks. Also, somehow plenty of other tools that we use have also been written in Go. It always depends on the context of course but for us at this moment Go is the "way to go".
+[Matt Ranney](https://www.youtube.com/watch?v=kb-m2fasdDY): What I Wish I Had Known Before Scaling Uber to 1000 Services
 
-# Microservices
 
-The first answer I promised to give today is: Do you need microservices. So lets see what they are and why would you ever use them.
+### Coupling
 
-### The term
+When change on one component requires changing another it becomes bit harder to achieve. In that sense one component is **coupled** with another. With each coupling introduced it becomes harder and harder to make changes. 
 
-The term microservices is not new and everyone seems to now what it means by now, but for me suprisingly it turned out to be a bit different than I initially percieved.
+[Greg Young](https://youtu.be/MjIfWe6bn40?t=25m24s):
 
-### Definition from microservices.io
+> If you can't build a monolith what makes you think putting network in the middle will help? 
+ 
+Monolith does not enforce service **isolation**, it is left up to **developer discipline**. When service boundaries are not explicitly defined they are very likely to be violated. Especially with larger number of developers involved.
 
-I really like the description of the term I took from the site microservices.io which states that it...
+Coupling is introduced on various levels:
 
-> is an architectural style that structures an application as a collection of loosely coupled services, which implement business capabilities. The microservice architecture enables the continuous delivery/deployment of large, complex applications. It also enables an organisation to evolve its technology stack.
+- module dependencies
+- shared data storages (e.g. databases)
+- database table references (e.g. foreign keys)
+- remote APIs (e.g. HTTP requests)
 
-So, in case you missed it the crucial point is that microservices are: 
 
-- **not coupled**, meaning that each service is autonomous to some degree,
-- that they **implement business capabilities**, which means NOT organizing stuff around technical features but around business feratures,
-- that they **enable continioius delivery/deployment**, meaning that developers are able to **make changes to single service and deploy** them without messing with other services in production, which enables faster delivery of features to production,
-- and finaly it enables organisation to **evolve its techology stack**, since you can easily switch techologies in one service without affection others.
+### Latency
 
-Each of those four crucial points is not about techology but about somethig completely on the other side of the spectrum, like autonomy, business, continuos delivery, evolving tech stack and agility. In case you thought microservices are about some technical aspects you were wrong, they are much more abstract term which talks more about organizing your system and your teams than the techology itself.
+Coupling may bring another side-effect which emerges in production environments: **latency**. Executing database queries on multiple rows/tables within single transaction triggers locking mechanisms which may cut down the overall performance. Microservices usually trade database consistency for **eventual consistency** to improve latency.
 
-### MS vs Monolith
+Consider the following workflow for handling a betting ticket request:
 
-Microservices are usually described as an alterantive to the monolith application architecure. On one side of the spectrum there is a single application that handles everything and on the other there is a number of autonomus services working on separate tasks.
+<img src="./images/latency.png" height=100/>
 
-### Autonomy and Databases
+This workflow spans four disjoint services: *tickets*, *odds*, *accounts* and *authorization*. Doing everyting within single database transaction would lock up all services until the ticket is placed in the database. By separating those entities into autonomous services we have improved the latency and reduced data consistency level.
 
-When we say that service is autonomous we mean that service owns all of the state it immediately depends on and manages. That is why I have drawn all those little databases attached to each service. Each service can read only his database, it is not allowed in any way to make queries on the other services database. This restriction enables me to modify the database of my service without fear of breaking some other service which was coupled to my private database. That's where the agiliy and continuous delivery come from - from the abiliy to change things without fear. Or with less fear at least. For the same reason, service should not depend on any common data store. If I drew the common database down here that would give them all possiblilty to read each others data and we would be back to square one regardless of this application division to smaller chunks.
+What could possibly go wrong? A common pattern for handling problems that emerge from service decoupling is [distributed saga pattern](https://youtu.be/0UTOLRTwOX0?t=46s).
 
-# Coupling
+### Small vs large projects
 
-### Not techical
+[Chad Fowler](https://youtu.be/-UKEPd2ipEk?t=29m56s) on success of small vs large projects: 
 
-So, coupling is number 1 reason for having microservices. Notice that this is again not techical reason. It is not about performance or scaling the system for larger traffic.
+> "Challenged" means significantly overtime or over budget (to me it sounds like failure). Small projects (most of them) succeed.
 
-### Greg Young
+<img src="./images/small_vs_large.png" height=300/>
 
-I run into a beautiful question from Greg Young's talk which goes like this: If you can't build a monolith what makes you think putting network in the middle will help?
+### Technical debt
 
-Plenty of software systems end up stuck in the monolith application where nobody is able to change anything since every change reflects on something else in the system, every change breaks something else. So it is best to leave everything as it is. This hugely influences the business as the competition takes bigger and bigger portions of the market until the business together with the monolith application dies out. So engineers search for the solution for their monolith problems and usually find the answer in microservice arhitecrture. 
+Decoupling of services make **quick-fixes** a bit **harder**. The interface each service has is strictly defined and can not be violated. A service is not able to reach out to another's data storage; that communication must be explicitly defined. 
 
-And than this question pops up.
+From a business point of view it is very nice to have ocasional quick-fix and to leave the actual full-size fixes for later. Such full-size fixes tend to fall out of focus since everything seems to work nicely and there is no evident business reason to do them. This slowly **accumulates technical debt** which can be very harmful for business in the long run.
 
-Indeed, why would putting the network between system components ever improve the system?
+So there is a cute tradeoff between being able to change things now or later.
 
-### Answer: Developer Dicipline and Physical boundaries
+# Examples
 
-The answer is a bit sad (for me at least) and it is "**developer discipline**". If you don't put physical boundaries between two software components (like modules or database tables) they are verly likely to become coupled very soon. So developers usually think "let me just pick this data from this database and I'm on my way". Everything seems to work, the application is shipped to production and everybody is happy. And it can go this way for quite some time until it all becomes to coupled to make any further changes.
+We will start with a very basic example and gradually upgrade it until we reach a setup very similar to our current production system. Feel free to start the examples locally on your machine and to take a look at the source code:
 
-### There has to be some coupling
+1. [services communicating using rest](https://github.com/minus5/examples-services/tree/master/01-http),
+1. [introducing messaging](https://github.com/minus5/examples-services/tree/master/02-nsq) (NSQ),
+1. [introducing service discovery](https://github.com/minus5/examples-services/tree/master/03-consul) (Consul) and
+1. [introducing containerisation](https://github.com/minus5/examples-services/tree/master/04-docker) (Docker)
 
-The individual coupling is never problem per se, but the bunch of couplings in the long run are. Of course, there has to be some coupling in the system, somebody has to actually fetch the data from the database. But coupling is something that should be handled with extreme caution. And in that sense, microsevices do seem to help.
 
-# Latency
+## Example 1: REST
 
-### Database queries
+We start with 3 services: `Sensor`, `Worker` and `App` ([source code](https://github.com/minus5/examples-services/tree/master/01-http)).
 
-Coupling may bring another side-effect which emerges in production environments: latency. Executing database queries on multiple rows/tables within single transaction triggers locking mechanisms which may cut down the overall performance. 
-
-### Eventual consistency
-
-Microservices usually trade database consistency for eventual consistency to improve latency.
-
-Consider the following workflow for handling a betting ticket request: (picture)
-
-This workflow spans four disjoint services: tickets, odds, accounts and authorization. Doing everyting within single database transaction would lock up all services until the ticket is placed in the database. By separating those entities into autonomous services we have improved the latency and reduced data consistency level.
-
-What could possibly go wrong? (dramatic pause)
-
-### Distributed saga
-
-Well, a lot can go wrong. A common pattern for handling problems that emerge from service decoupling is distributed saga pattern. In the basic terms is says is that you should: 
-
-- make every action idempotent, which means that you can repeat every action as many times as you want without changing the outcome,
-- for every action make reversible action, so you can cancel every step if you decide to,
-- make order of actions irrelevant, so you can first cancel some action and than do the action later with exactly the same outcome
-
-### Compensate manually
-
-So, we have given up the good old database consistency and now we are doing everything we can to compensate. Which is kind of hard to get used to because it requires additional effort from developers. And they cannont help but think "omg, why are we doing this, this would be a one-liner in SQL". So you constantly have to remind yourself why are you doing this to maintain your sanity.
-
-### Warning 1: Unexpected Extra Work
-
-The bottom line is - microservices may bring along a lot of extra work outside of the core domain and lot of edge cases you have to handle manually.
-
-# Technical debt
-
-### No quick fixes
-
-If you listened carefully you might have noticed that now it is not possible for one service to reach into another services database. So what happens it your manager comes in one day and asks you to make a quick fix by grabbing that data from another database?
-
-Decoupling of services make quick-fixes a bit harder. The interface each service has is strictly defined and can not be violated. A service is not able to reach out to another's data storage; that communication must be explicitly defined.
-
-From a business point of view it is very nice to have ocasional quick-fix and to leave the actual full-size fixes for later. Such full-size fixes tend to fall out of focus since everything seems to work nicely and there is no evident business reason to do them. This slowly accumulates technical debt which can be very harmful for business in the long run.
-
-Just to be clear, that is exactly what we wanted to achieve in the first place by using microservices: to restrict accidental or non-accidental coupling!
-
-# Scalability
-
-Scalability is obviously a huge, huge benefit you get from doing microservices. In a sentence: it is easier to scale a distributed system then monolith.
-
-# REST
-
-Hopefuly that shuold be enough to give you the idea what are we trying to solve and get us on the same page. Now it's time to move on to the examples I promised.
-
-### Components
-
-We start with 3 services: `Sensor`, `Worker` and `App`.
+<img src="./images/rest.png" height=300/>
 
 `Sensor` generates random numbers and exposes them at HTTP interface. 
 
 `Worker` is able to receive some sensor data ad perform some heavy computation on it. In this showcase it only squares received numbers and returns them as a result. It also exposes this functionality on HTTP interface.
 
 `App` orchestrates the whole process. It asks `Sensor` for some data, sends the data to the `Worker`, receives the result and writes it to log. 
+
+### Development environment
+
+We should be able to build and start the whole system as easy as **with single monolith application**. In system with multiple services you should have **automated building and running**; without it development process tends to become slow and painful.
+
+We can start our example by separately building and starting each service. For example, to build and run `Sensor` one should do:
+
+```
+$ cd ./01-http/sensor
+$ go build
+$ ./sensor
+Started sensor at http://localhost:9001.
+```
+
+Since the procedure is similar for each service we can automate it. To do so we write a simple *Ruby* script (using [thor](https://github.com/erikhuda/thor) task runner):
+
+```
+desc "binary", "Build single go binary"
+def binary(name)
+  puts "#{name}: building binary"
+  path_cmd(name, "go build")
+end
+
+desc "binary_all", "Build all go binaries"
+def binary_all()
+  binary('sensor')
+  binary('worker')
+  binary('app')
+end
+```
+
+We use another task runner ([goreman](https://github.com/mattn/goreman)) to run and stop all the services at the same time. We instruct *goreman* which services to run by listing them in the [Procfile](https://github.com/minus5/examples-services/blob/master/01-http/Procfile):
+
+```
+sensor: ./sensor/sensor 2>&1 
+worker: ./worker/worker 2>&1 
+app: ./app/app 2>&1
+```
+
+Now we are able to build and start (and stop) everything with two commands:
+
+```
+./build.rb binary_all
+goreman start
+```
+
+### Orchestration
 
 In given example `App` has the responsibility of process **orchestration** by leading it through series of actions:
 
@@ -174,11 +184,9 @@ In given example `App` has the responsibility of process **orchestration** by le
 - asking the `Worker` to perform calculations
 - logging the result to log
 
-### Orchestration
-
 Very important aspect of the orchestrator is that it concentrates the overall **process workflow** on **single place**: in its source code. With implementation details delegated further (to other services) process workflow becomes much easier to grasp.
 
-### Second attempt
+### REST: second attempt
 
 `App` initiates the cycle every second with hope that there is some new data available on `Sensor`. If the data is unevenly distributed through time (it almost always is) it could emit ten events in one second and than have a period of silence several minutes long. It would be much better to push the data from `Sensor` to `App` the moment it becomes available.
 
@@ -188,6 +196,8 @@ For that purpose we might try to rearrange the layout to allow `Sensor` to initi
 - `Sensor` sends the data to `Worker`
 - `Worker` crunches the data and sends the result to `App`
 - `App` logs the result
+
+<img src="./images/rest2.png" height=120/>
 
 This layout has some significant improvements: 
 
@@ -200,25 +210,13 @@ However, this layout is in many aspects a step backwards:
 - `Sensor` has become responsible to deliver the data to the `Worker`
 - the **overall process workflow** of the system **is scattered around** number of services
 
-### Surprise: not possible without drawbacks
+## Example 2: Messaging
 
-So it actually came to me as a surprise that I was not able to build even a simple system such as this one withot significant drawbacks. For a long time I believed that the whole system could work just by using HTTP requests. So I was a bit disappointed with the result. Nontheless, it is still a very interesting observation that building system with only synchronous requests is very limitig factor.
+In the [second example](https://github.com/minus5/examples-services/tree/master/02-nsq) we replace HTTP communication with **asynchronous messaging**. Every microservice attaches itself to the message queueing service and uses it as it's only interface to other services. In our system we are using [NSQ](http://nsq.io) distributed messaging system. 
 
-# Messaging
+<img src="./images/nsq.png" height=220/>
 
-So it is not much of a surprise that the next step is the introduction of asynchronous messaging. 
-
-Every microservice attaches itself to the message queueing service and uses it as it's only interface to other services. In our system we are using [NSQ](http://nsq.io) distributed messaging system. 
-
-This is a second example in our examples repository.
-
-### Routing intro
-
-Services are not in any way aware of other services in the system. Message producers are unable to choose which service should receive messages being send. Instead they use various routing algorithms.
-
-# Routing
-
-### Topics and channels
+Services are not in any way aware of other services in the system. Message producers are unable to choose which service should receive messages being send. Instead they use various **routing** algorithms.
 
 Message routing in NSQ is organised around *topics* and *channels*:
 
@@ -226,29 +224,35 @@ Message routing in NSQ is organised around *topics* and *channels*:
 - each interested consumer opens his own named **channel** on that topic
 - every channel will receive a copy of every message published on topic
 
-### Pub/sub and load balancing
-
 Routing mechanism we just described is equivalent to classic **pub/sub** mechanism (`Worker` subscribes to `Sensor` messages).
 
-The other common pattern is to distribute messages evenly between several service instances, know as **load balancing**. That is also very simple to achive by attaching to exisitig channel. 
+The other common pattern is to distribute messages evenly between several service instances (**load balancing**). For example, if we introduce another instance of `Worker` all messages will be evenly distributed between two of them (image from [NSQ docs](http://nsq.io/overview/design.html)). 
 
-So if I open a channel whith a brand new name I will get all messages (thus implementig pub/sub) and I open a channel with existing name I will share messages with some othere services (thus implementing load balancing).
-
-### Not statically configured
+<img src="./images/nsq.gif" height=320/>
 
 It is important to notice that NSQ routing is **not statically configured**. It is up to services to decide which topics and channels to open. This way **message routing is completely managed by services**.
 
-### Anti patterns 
+### Who is responsible for message delivery?
 
-There are many other routing patterns available. However, one should be aware that complex routing algorithms have been recognised as an anti-pattern in microservice architecture. Messaging component should be kept as dumb as possible; smart parts of the application should be moved to the endpoints. If message routing is too smart it becomes too hard for developers to track down what is happening in the system and we lose the agiliy again. Which defeats the whole purpose of decoupling.
+In the three examples shown we have had three different responsibility patterns. 
 
-# Messaging edge cases
+1. `Sensor` is passive, it responds only when asked for the data
+2. `Sensor` is responsible to deliver the data to all interested parties
+3. `Sensor` dispatches the data to NSQ
 
-### Stale
+<img src="./images/responsibility.png" height=270/>
+
+Drawback with first pattern is that interested parties don't know when the data is available — so they have to poll. 
+
+Drawback with second pattern is that service is responsible to deliver data to all interested parties (introduced coupling). Additional problems may arise when target services are unavailable.
+
+In the third pattern responsibility of message delivery is loaded off to a third party (NSQ). Service can now focus its attention to its domain problems.
+
+### Stale messages
 
 What happens if some consumer goes down and **misses some messages**? Messages will wait in the queue and be delivered when service comes up again. In most cases that is a wonderful feature but it might have some dangerous side effects. The effects of stale messages have to be **considered separately depending on the context**.
 
-### Missed
+### Missed messages
 
 What happens when some messages have not been handled properly? One common solution is to allow consumer to ask the publisher to **replay the data missed**. For such purposes publishers should have additional interface for data replay queries. Consumer should be able:
 
@@ -257,59 +261,46 @@ What happens when some messages have not been handled properly? One common solut
 - to handle messages idempotently
 - to make **full state recovery** when too much data has been missed
 
-### Order
+### Routing anti-patterns 
 
-Also, one has to be aware that messages may arrive in **diferent order** than being sent. How do we deal with that?
+We have mentioned two routing patterns: pub/sub and load balancing. There are many others available. However, one should be aware that complex routing algorithms have been recognised as an **anti-pattern** in microservice architecture. Messaging component should be kept as *dumb* as possible; *smart* parts of the application should be moved to the endpoints ([pictures by Martin Fowler](https://youtu.be/wgdBVIX9ifA?t=7m55s)).
 
-### Warning 2: Messaging edge cases
+<img src="./images/nsq-smarts1.png" height=270/>
+<img src="./images/nsq-smarts2.png" height=270/>
 
-All of these problems are outside of the domain you are dealing with. They are not in any way related to betting or sport or odds or bookmakers. But now your developers are handling bunch of edge cases which came together with separation of single monolith to multiple services. The system is distributed and you constantly find yourself designing your services around those edge cases caused by architecture and not the root domain problems.
 
-# NSQadmin
+### Distributed messaging
 
-This is a screenshot of admin interface for NSQ messaging also know as nsqadmin. I took it from our production system. I contains a lot of information but lets take it step by step.
+Very important property of NSQ is that it is **distributed**. This prevents it from introducing single point of failure. Basic components of NSQ system are:
 
-On the top of the page is the name of the topic, Betradar. Betradar is our business partner which provides us a stream of live odds. So somehow underneath we are connecting to their servers, take the information from them and strem them into our system as a stream of messages.
+- *nsqd* — messaging node
+- *nsqlookupd* — discovery node
+- *nsqadmin* — administration GUI
 
-In the first table we can see that we actually have two sources of Betradar messages. But if we look a little closer we see that the first source is the only one sending the messages, the other one is not there but not doing any actual work. So this one might be a backup instance waiting to take over the job or the stale one ready to be terminated.
+One can **simultaneously** use multiple instances of **any** node type. 
 
-Also we see that since the beginning of the procces this producer hac produced 11 million messages.
+When multiple *nsqd* instances are available in the system they should all register at *nsqlookupd* which has a role very similar to **messaging DNS**. Consumers will find all nodes that have some topic by asking *nsqlookupd*.
 
-In the second table we see a list of channels open on that topic. From the names of the channles we can usualy deduce what application is using it. That is developers are behaving nicely. 
 
-The most important one here `tecajna` service. Other services are:
-- nsq_to_log which are soring nsq messages to logs obviously, 
-- nsq_to_ws which replicate those messages to our stqging areas, namely staging 2 and staging 3. So this way we are supporting our staging areas with the same live fedd which or production side has. Which is very nice bonus feature of messaging.
+### Impact of messaging
 
-So here we have 2 producers of messages (or 1 to be honest) and we have 4 consumers of messages which all receive a copy of every message. So this is an example of pub/sub. If we started another instance of tecajna service they would automatically start to load-balance messages.
+Messaging has impact on many other aspects of the system:
 
-Depth 0 is telling us that there are no messages waiting in the queue, in-flight 0 tells us that there are no messages being processed at the moment, and ewe can also see that some messages have been requeued and that some messages have been "timed out" whic indicates that there have been some problems with those messages in the past. 
+- decoupling
+- event driven design
+- asynchronicity (better support for bursts of data)
+- persistence (disaster recovery)
+- routing (event broadcast, load balancing)
 
-Also, on top of the page there is a small control panel by which we can empty queue when someting goes terribly wrong. Or to pause message delivery when doing some potentialy risky stuff like moving containers from one host to another or something like that.
+## Example 3: Service discovery
 
-So we can get a lot of information about the health of our system just by looking at this dashboard. It is usualy very helpful to check this dashboard when trying to understand what is going on in the system.
+Description from [Wikipedia](https://en.wikipedia.org/wiki/Service_discovery):
 
-# Service Discovery
+> Service discovery is the automatic detection of devices and services on a computer network. 
+ 
+In our system we are using [Consul](https://www.consul.io/) for service discovery ([example 3](https://github.com/minus5/examples-services/tree/master/03-consul)).
 
-### REST is still alive
-
-Even though messaging is the preferred way to communicate we still have a lot of communication done using REST interfaces. Also, there are some components in the system that are not able to communicate using messaging. For example there are databeses, key-value storages, web proxies, external web services and so on. 
-
-So we have reduced coupling to some extent but there is stil a lot of coupling to be resolved. 
-
-### Classic solution: confing and env
-
-So I have a service that needs to makes some HTTP requests to some other service. How do I explain to him where to do it? The classic solution is to use some config files or to read configuration from environment.
-
-But now we have a system that is very dynamic, new containers are put to production or removed from production every now and then. We dont want to reconfigure every service manually. Instead we use **Service dicovery**.
-
-### Service Discovery
-
-So we introduce another component into the system that has the responsibility of registering every service in the system as soon as it appears in the system and deregistering them as soon as they disappear.
-
-The tool we use for that is named Consul. This is how it works.
-
-### Service registration
+Usually there are some components in the system that are not able to communicate using messaging. Service discovery helps us **locate those services by their name**.
 
 Every service in the system **registers itself** to Counsul by sending him its:
 
@@ -319,91 +310,166 @@ Every service in the system **registers itself** to Counsul by sending him its:
 
 Consul will periodically poll *health_check* endpoint of each registered service and inform other services about any changes in the service infrastructure. 
 
-# Service resolution
+The only thing that remains to be manually configured within each service is a list of Consul locations; all other infrastructure information is obtained from Consul.
 
-There are several ways to resolve service location via Consul.
+### Service resolution patterns
 
-The first option is to setup Conusul as DNS resolver. So other services are configured to make requests to some DNS names, like for example mongo.service.sd, and will receive the actual IP and port of the sercvice.
+There are several ways to resolve service location via Consul:
 
-The other option is to ask Consul the actual service location before making each reuqest. But this ends up as to much unnessecary queries being made. They all get the same response. So you can cache your requests and so on.
+- setting up Consul as DNS (query DNS for *mongo.service.sd*)
+- polling Consul with HTTP requests
+- permanent TCP connection to Consul
+- [consul-template](https://github.com/hashicorp/consul-template)
 
-Consul also supports events. Service can attach itself to Consul and listen to its events. Wheneves someting changes in the system infrastructure Consul emits events and application react accordingly. So services don't have to poll anymore.
+It is very common to write wrappers for HTTP requests that will make service discovery by Consul transparent for the developers.
 
-For third-party applications, where you cannot change the way they work there is a solution to reconfigure thir config files and to gracefully restart them. We have been doing this with nginx config files, Rails config files, proxies, and meny others. For example we create nginx config file as a template that is filled with values from Consul and gracefully reload nginx on every relevant change on Counsul. 
+### Consul-template
 
-# Consul admin
+[Consul-template](https://github.com/hashicorp/consul-template) is a small command-line tool that facilitates configuration of services with current information from Consul. 
 
-This is another screenshot from our production. This is admin interface for Consul. On the upper right corner there is a dropdown where you can select the datacenter you are exploring. I have selected our s2 datacenter. You can see that we have some other interesting datacenters like for example several staging datacenters. 
+For example, to reconfigure *Rails* application with current service locations we can generate its `config.yml` from this Consul template:
 
-On the left side is the list of the services in s2 datacenter registered to Consul. Also, you can see that everything is green which means that every service is running as expected. Consult know that by periodically polling health_check for every service. So for example we can see that for selecetd service dib there are 4 healt checks passing. And so on.
+```
+# excerpt from Rails config.yml
+# ask Consul for current location of statsd
+{{range service "statsd|passing,warning"}}
+  statsd:
+    server:    {{.Address}}
+    port:      {{.Port}}
+{{end}}
+```
 
-On the right side we see that there are 2 instances of `dbi` service started, one on node app1 and the other on node app2. They are also green so we are all clear, everything is working as expected.
+Within the container that runs this *Rails* application we run `consul-template` as background job:
 
-In case something was wrong we would see which services are down and what health_checks are not passing. Of course, now we can attach some notifiers to Consul to alert us whenever something goes wrong.
+```
+consul-template -template \
+  "/templates/config.local.yml:/apps/backend/config.local.yml:touch /apps/backend/tmp/restart.txt"
+```
 
-# Alerting in Slack
+Every change of `statsd` status on Consul will trigger rendering of *config.yml* and graceful restart *Rails* application.
 
-And this is how it looks like. This is screenshot from our alerts room in Slack to which we send all notifications from consul.
+We have been using `consul-template` with various applications, both third party (*haproxy*, *nginx*, *nsq*, *keepalived*) and our custom (*Rails*, *Node*...). Within *Go* applications we use our [custom library](https://github.com/minus5/svckit/tree/master/dcy) that maintains constant connection with Consul without need for restarting the service.
 
-This first message is alerting our developers that something is wrong with http_to_nsq service. Also we can see the details of its health_checks. So here it says, service is down because it can no longer access some API, namely 5-lotatoe.suopersport.local.ping. 
+### Other Consul features
 
-In the next line, one minute later, you can see that I am telling everybody else that it is my fault and that I am doing someting and that I will fix it ASAP.
+- alerting (built upon *health_check*)
+- leader election
+- multi datacenters
 
-And then two minutes ahead we can see that we are back to normal state and that everything is working fine.
+## Example 4: Containerisation
 
-In this line we can see another type of alert. This one says that the queue deply for this nsq channel is in constant increase for last 8 checks. That can mean either that application is down and noone is consuming the messages or that application is consuming messages slower than they appear in the queue. So somebody should probably do sometihng about it. As far as we can see here nobody has reacted to this alert and it cleared out by itself. This probably means that we should adjust our parameters for alerting for this specific case.
+Adding new modules to the monolith application rarely has any impact on the development environment or on the production infrastructure. We want be able to **instantiate new services** just as easily. 
 
-# Containerisation
+That's what [Docker](https://www.docker.com/) is here for:
 
-### Monolith and new modules
+- **isolate** each service within its container
+- define environment for each service (its own OS)
+- simple service management (deploy, run, stop, restart)
 
-Adding new modules to the monolith application rarely has any impact on the development environment or on the production infrastructure. We want be able to instantiate new services just as easily.
+[Greg Young](https://youtu.be/MjIfWe6bn40?t=27m5s):
 
-### Docker
+> I could run all services in a single OS process. If I did this my costs would be low. But I would have no way of knowing that another process is not looking at my memory directly. On top of that, what happens when one service chrashes? It takes down the whole OS process down which takes down all services.
 
-So this is how we do it using Docker. For each service we write a recipe which specifies requirements for running some service. For example we say we are going to need this version of Linux, this version of Ruby and so on. In this step we dont actually install anything, we just write what we are goinng to need in the text file. This is just a recipe.
+> I could go to the next level. I could run one OS process per service on the same machine. Now I've got better failure isolation but my costs are higher because I have to maintain all these processes. Anoter benefit is that I can use standard OS tools to manage my processes. Like for example killing and restarting the problematic process. 
 
-The next step is to build image from the recipe. In this stem Docker takes the recipe, acually collects everytihn fro web, writes it down to image which is then ready to run our service.
+> Another level of isolation is running Docker conatiner per service. Another level is running on multiple nodes.
 
-In the final step we run this image. In other words we create running container with our service in it.
+> Each step increases overal cost. But you don't have to make that decision up front. 
 
-### Infrastructure as a code
+In [example 4](https://github.com/minus5/examples-services/tree/master/04-docker) we setup our system infrastructure using Docker. Each service gets its own Docker container.
 
-Now, I wouldn't like to go into details of how Docker works. The reason why I am telling you this is that by using this we have all of our infrastructure written in source code. 
+### Docker toolset
 
-This is very beautiful feature. It is a bit hard to appreciate its full beauty if you have never went through agony of manualy installing OS and software requirements for every server you have.
+Here are some basic terms from Docker ecosystem:
 
-# Containerisation features
+- *Dockerfile* — a receipt for building an image
+- image — a blueprint for creating containers
+- container — image mounted on a Docker host (does the actual work)
+- [registry](https://hub.docker.com/_/registry/) — a repository for storing Docker images
+- [Docker Hub](https://hub.docker.com/) — public Docker registry
+- [docker-compose](https://docs.docker.com/compose/) — define all containers that run on a single host
+- [docker-machine](https://docs.docker.com/machine/) — run docker commands remotely
 
-### Decoupling levels by Greg Young
+**Dockerfile** is a receipt for building single Docker image. For each service (`Sensor`, `Worker`, `App`) we define [separate Dockerfile](https://github.com/minus5/examples-services/tree/master/04-docker/images). Here is an example of Dockerfile for `Sensor`:
 
-Containerisation adds another level of decoupling to services. Now each service can have its own OS, its own library versions and so on. So now I can change version of Ruby for one service, deploy it and be sure that other sercvices are left untact.
+```
+FROM gliderlabs/alpine:3.4     # start from existing image (download it from Docker hub)
+COPY sensor /bin               # add my binary into image
+WORKDIR bin                    # position myself into directory
+ENTRYPOINT ["sensor"]          # when starting container start my binary
+```
 
-I could run all services in a single OS process. If I did this my costs would be low. But I would have no way of knowing that another process is not looking at my memory directly. On top of that, what happens when one service chrashes? It takes down the whole OS process down which takes down all services.
+**Docker image** is created from *Dockerfile* receipt.
 
-I could go to the next level. I could run one OS process per service on the same machine. Now I've got better failure isolation but my costs are higher because I have to maintain all these processes. Anoter benefit is that I can use standard OS tools to manage my processes. Like for example killing and restarting the problematic process. 
+```
+$ docker build -t sensor .
+```
 
-Another level of isolation is running Docker conatiner per service. Another level is running on multiple nodes.
+After creating the image we should be able to see it by listing all available local images. Here we see that we have *alpine* and `Sensor` images available:
 
-Each step increases overal cost. But you don't have to make that decision up front. 
+```
+$ docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+sensor              latest              8d1f3a5ccb5c        5 seconds ago       11.7MB
+gliderlabs/alpine   3.4                 bce0a5935f2d        13 days ago         4.81MB
+```
 
-Another feature is that I can try the service in exactly same environment as in production and deploy the same image to production.
+**Docker containers** are created by mounting images on Docker host:
 
-Another feauture is that you get the command line toolset for service management. So now you suddenly have tools to deploy sometihng to production, to restart service, to start or stop it. 
+```
+$ docker create sensor
+$ dokcer ps -a
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+cad9a64773b3        sensor              "sensor"            47 seconds ago      Created                                 elated_jackson
+```
 
-So all together you get very nice set of tools to use.
+Containers are components that actually run our services. They are controlled using [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/) (create, start, stop, restart...).
 
-# Infrastructuire as code
+[Docker-compose](https://docs.docker.com/compose/) is a tool that enables you to define a set of containers that should be simultaneously started on a single host. Also, you can define the environment for every container (env variables, open ports, mounted volumes...).
 
-So as I have mentioned now we have all out infrastructure in sorce code. To be more specific, we have a single git repository which describes everything.
+In our example we [define](https://github.com/minus5/examples-services/blob/master/04-docker/datacenters/dev/host1/docker-compose.yml) that we want to run 8 containers on the same Docker host:
 
-I that repository first you will find is a list of datacenters we have. In each datacenters whe have defined a list of nodes we have.
+- `Sensor`
+- `Worker`
+- `App`
+- [consul](https://hub.docker.com/_/consul/)
+- [registrator](https://github.com/gliderlabs/registrator)
+- [nsqd](https://hub.docker.com/r/nsqio/nsq/)
+- nsqlookupd
+- nsqadmin
 
-On each node we have a list of list of Containers. 
+It is important to notice that we **already have available** Docker images for Consul, registrator, nsqd, nsqlookupd and nsqadmin on Docker hub. Our custom images (`Sensor`, `Worker` and `App`) are created by extending another available image ([alpine](https://hub.docker.com/_/alpine/)) just by adding our application binaries into it.
 
-So every change to infrastucture is commited to this git repository. So when we instruct our deployer application to deploy some image to some node it actually makes changes to our git repository and commits them automatically. So you can always be sure that the last version of the infrastructure is in git repo.
+Now we can start **the whole system** on our local Docker host with **a single command**:
 
-# Continuous integration
+```
+docker-compose up
+```
+
+[Docker machine](https://docs.docker.com/machine/) enables us to run Docker commands on remote hosts.
+
+
+
+## Infrastructure as a source
+
+Very important aspect of containerisation is that it allows us to have the **complete infrastructure** defined **in source code** in a single place (i.e., in a single git repository). 
+
+[Example 4](https://github.com/minus5/examples-services/tree/master/04-docker) gives an overview of **infrastructure we use in production**. It is hierarchically organised in a tree structure:
+
+- list of **datacenters** (*dev*, *supersport*, *aws*)
+- each datacenter has a list of Docker **hosts** 
+- each host has a list of running **containers** and their environment (defined by *docker-compose.yml*)
+
+## Consul registrator
+
+Each service has to register itself to Consul by sending him his name and location. 
+Docker provides eventing mechanism which streams information of registered containers on each node. When Docker and Consul are used together those two mechanisms can be used to get automatic registration of services on Consul. 
+
+[Registrator](https://github.com/gliderlabs/registrator) **automatically registers and deregisters services** for any Docker container by inspecting containers as they come online/offline.
+
+## Continuous integration
+
+In our *dev* datacenter we have several containers responsible for managing the CI process.
 
 *Application builder* reacts on every commit in the source code and **builds application binaries**. We have separate container for each target technology: *Go* builder builds *Go* binaries, *Rails* builder precompiles web assets, *JS* builder builds web pages using *Webpack* , etc. 
 
@@ -411,9 +477,11 @@ So every change to infrastucture is commited to this git repository. So when we 
 
 *Deployer* **executes deploy commands** on remote Docker hosts (using *docker-machine*). It also commits every change to the infrastructure repository. Every deploy is a change in the system infrastructure. Reverting is equivalent to deployment of older image.
 
-# Infrastructure examples
+# Final result
 
 Picture below shows the overview of the final arhitecture. Two datacenters are shown, *dev* and *aws*. Each datacenter has several Docker hosts. *Dev* datacenter has two: *dev1* and *dev2*. Each Docker host has several containers running. Host *dev1* has eight.
+
+<img src="./images/dcs.png" height=400/>
 
 What happens when new `Worker` is added to the system?
 
@@ -424,15 +492,67 @@ What happens when new `Worker` is added to the system?
 - `Worker` asks `nsqlookupd` where he can find `nsqd` with topic `sensor_data`
 - `Worker` connects to `nsqd` and starts receiving messages
 
+# Summary
 
-# Conclusion
+### Patterns 
+ 
+* communication patterns: sync vs async
+* service discovery
+* deployment system
+* logging
+* monitoring
+* alerting
+* continuous integration
+* infrastructure as a source
 
-We have reached the end of this talk. I hope I gave you the answers I promised:
 
+### Antipatterns 
 
-- Do you need microservices?
-- Which problems should you expect?
-- How did we solve them?
+Microservices can go wrong:
 
-# Thank you
+* consistency (vs eventual consistency)
+* synchronous communication
+* shared libraries
+* shared database
+
+# Resources
+
+Sites:
+
+ - [microservices.io](microservices.io)
+ - [martinfowler.com](https://martinfowler.com)
+ - [The Hardest Part About Microservices: Your Data](http://blog.christianposta.com/microservices/the-hardest-part-about-microservices-data/)
+
+Tools:
+
+- [NSQ](http://nsq.io)
+- [Consul](https://www.consul.io/)
+- [consul-template](https://github.com/hashicorp/consul-template)
+- [Docker](https://www.docker.com/)
+- [Docker registry](https://hub.docker.com/_/registry/)
+- [Docker Hub](https://hub.docker.com/)
+- [docker-compose](https://docs.docker.com/compose/)
+- [docker-machine](https://docs.docker.com/machine/)
+- [svckit](https://github.com/minus5/svckit/tree/master/dcy)
+
+Talks:
+
+- [GOTO 2016 • Messaging and Microservices • Clemens Vasters](https://www.youtube.com/watch?v=rXi5CLjIQ9kon)
+- [GOTO 2016 • What I Wish I Had Known Before Scaling Uber to 1000 Services • Matt Ranney](https://www.youtube.com/watch?v=kb-m2fasdDY)
+- [GOTO 2014 • Microservices • Martin Fowler](https://youtu.be/wgdBVIX9ifA?t=7m55s)
+- [GOTO 2015 • DDD & Microservices: At Last, Some Boundaries! • Eric Evans](https://www.youtube.com/watch?v=yPvef9R3k-M)
+- [Rocky Mountain Ruby 2016 - Kill "Microservices" before its too late by Chad Fowler](https://youtu.be/-UKEPd2ipEk?t=3m21s)
+- [Distributed Sagas: A Protocol for Coordinating Microservices - Caitie McCaffrey - JOTB17](https://youtu.be/0UTOLRTwOX0)
+- [The hardest part of microservices is your data](https://www.youtube.com/watch?v=MrV0DqTqpFU)
+- [GOTO 2016 • Microservices at Netflix Scale: Principles, Tradeoffs & Lessons Learned • R. Meshenberg](https://www.youtube.com/watch?v=57UK46qfBLY)
+- [Martin Fowler – What Does Tech Excellence Look Like? | TW Live Australia 2016](https://www.youtube.com/watch?v=Avs70dZ3Vlk)
+- [GOTO 2017 • The Many Meanings of Event-Driven Architecture • Martin Fowler](https://www.youtube.com/watch?v=STKCRSUsyP0)
+- [GOTO 2016 • Psychology, Philosophy & Programming • Ted Neward](https://www.youtube.com/watch?v=XShcmCBK93E)
+- [GOTO 2014 • Event Sourcing • Greg Young](https://www.youtube.com/watch?v=8JKjvY4etTY)
+- [Greg Young — A Decade of DDD, CQRS, Event Sourcing](https://www.youtube.com/watch?v=LDW0QWie21s)
+- [Greg Young - CQRS and Event Sourcing - Code on the Beach 2014](https://www.youtube.com/watch?v=JHGkaShoyNs)
+- [Greg Young - The Long Sad History of MicroServices TM](https://www.youtube.com/watch?v=MjIfWe6bn40)
+- [GOTO 2016 • The Frontend Taboo: a Story of Full Stack Microservices • Luis Mineiro & Moritz Grauel](https://www.youtube.com/watch?v=vCzTK4XPfX8)
+- [Developing microservices with aggregates - Chris Richardson](https://www.youtube.com/watch?v=7kX3fs0pWwc)
+
 
